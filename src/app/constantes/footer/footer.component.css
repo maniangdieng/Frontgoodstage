@@ -1,0 +1,17 @@
+.footer {
+    
+    height: 50px;
+    background-color: #4e8f47; 
+    color: white; 
+    text-align: center;
+    padding: 0;
+ 
+    bottom: 0; 
+    width: 100%;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Légère ombre pour un effet élégant */
+}
+.footer p {
+    padding-top: 5px;
+    margin: 0; /* Retirer les marges par défaut */
+    font-size: 14px;
+}

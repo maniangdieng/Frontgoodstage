@@ -1,0 +1,56 @@
+<app-header></app-header>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <!-- Barre latérale -->
+        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 custom-bg">
+            <div class="d-flex flex-column align-items-start px-3 pt-2 text-white min-vh-100">
+                <a class="d-flex align-items-center pb-3 mb-md-0 text-white text-decoration-none">
+                    <span class="fs-5 d-none d-sm-inline">Bienvenue, DFC</span>
+                </a>
+                <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
+                    <li>
+                        <a [routerLink]="[]" fragment="receptionArretes" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+                            <i class="fs-4 bi bi-file-earmark-text me-2"></i>
+                            <span>Réception des arrêtés</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a [routerLink]="[]" fragment="octroiFonds" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+                            <i class="fs-4 bi bi-cash-stack me-2"></i>
+                            <span>Octroi des fonds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a [routerLink]="[]" fragment="notificationDRC" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+                            <i class="fs-4 bi bi-bell me-2"></i>
+                            <span>Notification à la DRC</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="col py-3" id="content-area">
+            <div id="receptionArretes" class="content-section">
+                <h3>Réception des arrêtés</h3>
+                <p>La DFC reçoit les arrêtés collectifs ou individuels du DRH.</p>
+            </div>
+
+            <div id="octroiFonds" class="content-section">
+                <h3>Octroi des fonds</h3>
+                <p>La DFC procède à l’octroi des fonds nécessaires aux voyages.</p>
+            </div>
+
+            <div id="notificationDRC" class="content-section">
+                <h3>Notification à la DRC</h3>
+                <p>La DFC notifie la DRC lorsque le mandatement des fonds est effectué.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>

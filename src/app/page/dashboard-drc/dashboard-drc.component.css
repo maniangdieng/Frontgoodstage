@@ -1,0 +1,38 @@
+.custom-bg {
+    background-color: #1b3f34; /* Couleur de fond personnalisée (gris clair) */
+}
+.nav-link i {
+    color: white !important; /* Icônes en blanc */
+}
+
+.nav-link {
+    color: white !important; /* Texte en blanc */
+}
+
+/* Effet de survol (hover) */
+.nav-link:hover {
+    background-color: white !important; /* Fond blanc */
+    color: black !important; /* Texte noir */
+}
+
+.nav-link:hover i {
+    color: black !important; /* Icônes noires */
+}
+.content-section {
+    display: none;
+  }
+
+
+  .content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}  
