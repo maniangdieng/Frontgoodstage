@@ -7,7 +7,7 @@ import { DashboardDrhComponent } from './page/dashboard-drh/dashboard-drh.compon
 import { DashboardDfcComponent } from './page/dashboard-dfc/dashboard-dfc.component';
 
 const routes: Routes = [
-  { path: 'dashboard-enseignant', component: DashboardPerComponent }, // Pas de slash ici
+  { path: 'dashboard-per', component: DashboardPerComponent }, // Pas de slash ici
   { path: 'dashboard-drc', component: DashboardDrcComponent }, // Pas de slash ici
   { path: 'dashboard-drh', component: DashboardDrhComponent }, // Pas de slash ici
   { path: 'dashboard-dfc', component: DashboardDfcComponent }, // Pas de slash ici
