@@ -2,33 +2,96 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { filter } from 'rxjs/operators';
 
 // Assurez-vous que HeaderComponent et FooterComponent sont standalone avant de les importer ici
 import { HeaderComponent } from '../../constantes/header/header.component';
 import { FooterComponent } from '../../constantes/footer/footer.component';
 
+interface Cohorte {
+  id: number;
+  annee: number;
+  dateOuverture: string;
+  dateSemiCloture: string;
+  dateClotureDef: string;
+}
+
+interface Utilisateur {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  role: string;
+}
+
 @Component({
   selector: 'app-dashboard-per',
   standalone: true,
   templateUrl: './dashboard-per.component.html',
   styleUrls: ['./dashboard-per.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent,RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent, RouterLink],
 })
 export class DashboardPerComponent implements OnInit {
-  
-  constructor(private router: Router) {}
+  candidatureForm: FormGroup;
+  selectedFiles: { [key: string]: File } = {};
+  cohortes: Cohorte[] = []; // Liste des cohortes disponibles
+  utilisateurs: Utilisateur[] = []; // Liste de tous les utilisateurs
+
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private router: Router
+  ) {
+    // Initialisation du formulaire réactif
+    this.candidatureForm = this.fb.group({
+      typeCandidature: ['nouveau', Validators.required],
+      cohorteId: ['', Validators.required],
+      personnelId: ['', Validators.required],
+      dateDepot: [''], // La date de dépôt sera automatiquement définie
+      dateDebut: ['', Validators.required], // Nouveau champ
+      dateFin: ['', Validators.required], // Nouveau champ
+      destination: ['', Validators.required],
+      informationsVoyage: [''],
+      reglesCohorte: [false],
+    });
+  }
 
   ngOnInit() {
     this.handleFragment();
-    
+    this.loadCohortes(); // Charger les cohortes au démarrage
+    this.loadUtilisateurs(); // Charger tous les utilisateurs au démarrage
+
     // Écoute des changements d'URL pour détecter les fragments dynamiquement
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.handleFragment();
       });
+  }
+
+  // Charger les cohortes depuis le back-end
+  loadCohortes() {
+    this.http.get<Cohorte[]>('http://localhost:8080/api/cohortes').subscribe(
+      (data) => {
+        this.cohortes = data;
+      },
+      (error) => {
+        console.error('Erreur lors du chargement des cohortes :', error);
+      }
+    );
+  }
+
+  // Charger tous les utilisateurs depuis le back-end
+  loadUtilisateurs() {
+    this.http.get<Utilisateur[]>('http://localhost:8080/api/utilisateurs').subscribe(
+      (data) => {
+        this.utilisateurs = data;
+      },
+      (error) => {
+        console.error('Erreur lors du chargement des utilisateurs :', error);
+      }
+    );
   }
 
   // Gestion du fragment pour afficher la bonne section
@@ -49,4 +112,68 @@ export class DashboardPerComponent implements OnInit {
       }
     }
   }
+
+  // Gestion du changement de type de candidature
+  onTypeChange() {
+    const type = this.candidatureForm.get('typeCandidature')?.value;
+    if (type === 'nouveau') {
+      this.candidatureForm.get('informationsVoyage')?.setValidators([Validators.required]);
+      this.candidatureForm.get('reglesCohorte')?.clearValidators();
+    } else if (type === 'ancien') {
+      this.candidatureForm.get('reglesCohorte')?.setValidators([Validators.requiredTrue]);
+      this.candidatureForm.get('informationsVoyage')?.clearValidators();
+    }
+    this.candidatureForm.get('informationsVoyage')?.updateValueAndValidity();
+    this.candidatureForm.get('reglesCohorte')?.updateValueAndValidity();
+  }
+
+  // Gestion de la sélection des fichiers
+  onFileChange(event: any, fieldName: string) {
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      this.selectedFiles[fieldName] = file;
+    }
+  }
+
+  // Soumission du formulaire
+  onSubmit() {
+    if (this.candidatureForm.invalid) {
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
+    }
+
+    // Définir la date de dépôt automatiquement
+    const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+    this.candidatureForm.get('dateDepot')?.setValue(today);
+
+    // Créer un objet JSON avec les données du formulaire
+    const candidatureData = {
+        typeCandidature: this.candidatureForm.get('typeCandidature')?.value,
+        cohorteId: this.candidatureForm.get('cohorteId')?.value,
+        personnelId: this.candidatureForm.get('personnelId')?.value,
+        dateDepot: this.candidatureForm.get('dateDepot')?.value,
+        dateDebut: this.candidatureForm.get('dateDebut')?.value,
+        dateFin: this.candidatureForm.get('dateFin')?.value,
+        destination: this.candidatureForm.get('destination')?.value,
+        informationsVoyage: this.candidatureForm.get('informationsVoyage')?.value,
+        reglesCohorte: this.candidatureForm.get('reglesCohorte')?.value,
+    };
+    
+
+    // Envoi des données au back-end
+    this.http.post('http://localhost:8080/api/candidatures', candidatureData).subscribe(
+        (response) => {
+            alert('Candidature soumise avec succès !');
+            this.router.navigate(['/suivi-candidatures']);
+        },
+        (error) => {
+          console.error('Erreur lors de la soumission :', error);
+          // Afficher le message d'erreur renvoyé par le backend
+          if (error.error && error.error.message) {
+              alert(error.error.message); // Afficher le message d'erreur structuré
+          } else {
+              alert('Une erreur s\'est produite lors de la soumission de la candidature.');
+          }}
+    );
+}
 }

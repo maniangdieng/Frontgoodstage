@@ -52,32 +52,79 @@
     </div>
 
     <!-- Contenu principal -->
-    <div class="col py-3" id="content-area">
-      <!-- Section Candidature -->
-      <div id="candidature" class="content-section">
-        <h3>Déposer Candidature</h3>
+    <div id="candidature" class="content-section">
+      <h3>Déposer Candidature</h3>
+      <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()">
+        <!-- Sélection du type de candidature -->
+        <div class="mb-3">
+          <label for="typeCandidature" class="form-label">Type de candidature</label>
+          <select id="typeCandidature" class="form-select" formControlName="typeCandidature" (change)="onTypeChange()">
+            <option value="nouveau">Nouveau Titulaire</option>
+            <option value="ancien">Ancien Enseignant</option>
+          </select>
+        </div>
 
-      <!-- Autres sections -->
-      <div id="subvention" class="content-section" style="display: none;">
-        <h3>Demander Subvention</h3>
-        <p>Formulaire pour demander une subvention.</p>
-      </div>
-      <div id="cohorte" class="content-section" style="display: none;">
-        <h3>Changer de Cohorte</h3>
-        <p>Formulaire pour changer de cohorte.</p>
-      </div>
-      <div id="compte" class="content-section" style="display: none;">
-        <h3>Informations du compte</h3>
-        <p>Informations liées au compte de l'utilisateur.</p>
-      </div>
-      <div id="suiviCandidatures" class="content-section" style="display: none;">
-        <h3>Suivi de mes candidatures</h3>
-        <p>Liste des candidatures suivies.</p>
-      </div>
-      <div id="suiviSubventions" class="content-section" style="display: none;">
-        <h3>Suivi des subventions</h3>
-        <p>Liste des subventions suivies.</p>
-      </div>
+        <!-- Sélection de la cohorte -->
+        <div class="mb-3">
+          <label for="cohorte" class="form-label">Cohorte</label>
+          <select id="cohorte" class="form-select" formControlName="cohorteId" required>
+            <option *ngFor="let cohorte of cohortes" [value]="cohorte.id">{{ cohorte.annee }}</option>
+          </select>
+        </div>
+
+        <!-- Sélection de l'utilisateur -->
+        <div class="mb-3">
+          <label for="utilisateur" class="form-label">Utilisateur</label>
+          <select id="utilisateur" class="form-select" formControlName="personnelId" required>
+            <option *ngFor="let utilisateur of utilisateurs" [value]="utilisateur.id">{{ utilisateur.nom }} {{ utilisateur.prenom }}</option>
+          </select>
+        </div>
+
+        <!-- Champs communs -->
+        <div class="mb-3">
+          <label for="dateDebut" class="form-label">Date de début</label>
+          <input type="date" id="dateDebut" class="form-control" formControlName="dateDebut" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="dateFin" class="form-label">Date de fin</label>
+          <input type="date" id="dateFin" class="form-control" formControlName="dateFin" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="destination" class="form-label">Destination</label>
+          <input type="text" id="destination" class="form-control" formControlName="destination">
+        </div>
+
+        <!-- Champs spécifiques pour Nouveau Titulaire -->
+        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'nouveau'">
+          <div class="mb-3">
+            <label for="arreteTitularisation" class="form-label">Arrêté de titularisation</label>
+            <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')">
+          </div>
+
+          <div class="mb-3">
+            <label for="informationsVoyage" class="form-label">Informations sur le voyage</label>
+            <textarea id="informationsVoyage" class="form-control" formControlName="informationsVoyage"></textarea>
+          </div>
+        </div>
+
+        <!-- Champs spécifiques pour Ancien Enseignant -->
+        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'ancien'">
+          <div class="mb-3">
+            <label for="justificatifPrecedentVoyage" class="form-label">Justificatif du précédent voyage</label>
+            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
+          </div>
+
+          <div class="mb-3">
+            <label for="reglesCohorte" class="form-label">Respect des règles de cohorte</label>
+            <input type="checkbox" id="reglesCohorte" class="form-check-input" formControlName="reglesCohorte">
+          </div>
+        </div>
+
+        <!-- Bouton de soumission -->
+        <button type="submit" class="btn btn-primary">Soumettre</button>
+      </form>
     </div>
   </div>
 </div>
