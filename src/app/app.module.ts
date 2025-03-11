@@ -10,6 +10,7 @@ import { CandidatureDetailsComponent } from './page/candidature-details/candidat
 @NgModule({
   declarations: [
     AppComponent,
+
   
   ],
 

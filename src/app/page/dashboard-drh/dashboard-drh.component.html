@@ -1,7 +1,5 @@
 <app-header></app-header>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
 <div class="container-fluid">
     <div class="row flex-nowrap">
         <!-- Barre latérale -->
@@ -38,6 +36,38 @@
             <div id="listeCandidats" class="content-section">
                 <h3>Liste des Candidats Sélectionnés</h3>
                 <p>Interface pour consulter la liste des candidats sélectionnés.</p>
+
+                <!-- Tableau des candidatures sélectionnées -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date Dépôt</th>
+                            <th>Statut</th>
+                            <th>Date Début</th>
+                            <th>Date Fin</th>
+                            <th>Destination</th>
+                            <th>Cohorte</th>
+                            <th>PER</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let candidature of candidatures">
+                            <td>{{ candidature.dateDepot | date }}</td>
+                            <td>{{ candidature.statut }}</td>
+                            <td>{{ candidature.dateDebut | date }}</td>
+                            <td>{{ candidature.dateFin | date }}</td>
+                            <td>{{ candidature.destination }}</td>
+                            <td>{{ candidature.cohorteAnnee }}</td>
+                            <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+                            <td>
+                                <button class="voir" [routerLink]="['/candidature-details-view', candidature.id]">
+                                    Voir détails
+                                  </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div id="arretIndividuel" class="content-section">

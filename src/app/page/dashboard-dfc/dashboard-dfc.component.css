@@ -21,3 +21,114 @@
 .content-section {
     display: none;
   }
+  .custom-bg {
+    background-color: #1b3f34; /* Couleur de fond personnalisée (gris clair) */
+}
+.nav-link i {
+    color: white !important; /* Icônes en blanc */
+}
+
+.nav-link {
+    color: white !important; /* Texte en blanc */
+}
+
+/* Effet de survol (hover) */
+.nav-link:hover {
+    background-color: white !important; /* Fond blanc */
+    color: black !important; /* Texte noir */
+}
+
+.nav-link:hover i {
+    color: black !important; /* Icônes noires */
+}
+.content-section {
+    display: none;
+  }
+
+
+  .content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}  
+/* Assurez-vous que le tableau occupe toute la largeur de la page */
+.table-container {
+    overflow-x: auto; /* Permet de défiler horizontalement si nécessaire */
+    width: 100%; /* Utilise toute la largeur disponible */
+    margin: 0 auto; /* Centre le tableau dans le conteneur */
+}
+
+/* Style pour le tableau */
+table {
+    width: 80%;
+    table-layout: fixed; /* Permet de mieux contrôler la largeur des colonnes */
+    border-collapse: collapse;
+}
+
+/* Style pour les en-têtes du tableau */
+table thead th {
+    background-color: #1b3f34;
+    color: white;
+    text-align: left;
+    padding: 12px;
+    word-wrap: break-word; /* Permet d'éviter les débordements de texte */
+}
+
+/* Style pour les lignes du tableau */
+table tbody tr {
+    background-color: #f9f9f9;
+}
+
+/* Effet de survol des lignes du tableau */
+table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Style pour les cellules du tableau */
+table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+    word-wrap: break-word; /* Permet d'éviter les débordements de texte */
+}
+
+/* Style pour les lignes paires */
+table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Style pour les boutons dans les cellules */
+table td button {
+    margin: 2px;
+}
+
+/* Style pour les boutons d'action */
+table td button.btn-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+table td button.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Réagir au survol des boutons */
+table td button:hover {
+    opacity: 0.8;
+}
+.voir{
+    background-color:#61a05a ;
+    border: none;
+    border-radius: 5px;
+    width: auto;
+}
+  

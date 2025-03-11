@@ -34,4 +34,7 @@ export class CandidatureService {
   deleteCandidature(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+  getCandidaturesByStatut(statut: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/statut/${statut}`);
+  }
 }
