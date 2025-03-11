@@ -104,40 +104,39 @@
             
         </div>
         <div id="gestionCandidatures" class="content-section">
-            <h3>Gestion des Candidatures</h3>
           
             <!-- Tableau des candidatures -->
             <h4>Liste des Candidatures</h4>
             <table class="table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Date de Dépôt</th>
+                    
+                    <th>Date Dépôt</th>
                     <th>Statut</th>
-                    <th>Date de Début</th>
-                    <th>Date de Fin</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
                     <th>Destination</th>
-                    <th>Cohorte (Année)</th>
-                    <th>Personnel (Matricule)</th>
-                    <th>Documents</th>
+                    <th>Cohorte</th>
+                    <th>PER</th>
+                    <th>Actions</th>
+
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let candidature of candidatures">
-                    <td>{{ candidature.id }}</td>
+                   
                     <td>{{ candidature.dateDepot | date }}</td>
                     <td>{{ candidature.statut }}</td>
                     <td>{{ candidature.dateDebut | date }}</td>
                     <td>{{ candidature.dateFin | date }}</td>
                     <td>{{ candidature.destination }}</td>
-                    <td>{{ candidature.cohorteId }}</td>
-                    <td>{{ candidature.personnelId }}</td>
+                        <td>{{ candidature.cohorteAnnee }}</td>
+                        <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+                    
                     <td>
-                      <ul>
-                        <li *ngFor="let document of candidature.documents">
-                          {{ document.nom }} ({{ document.type }})
-                        </li>
-                      </ul>
+                        <button class="voir" [routerLink]="['/candidature-details', candidature.id]">
+                            Voir détails
+                        </button>
                     </td>
                   </tr>
                 </tbody>
