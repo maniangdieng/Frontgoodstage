@@ -54,7 +54,7 @@
     <!-- Contenu principal -->
     <div id="candidature" class="content-section">
       <h3>Déposer Candidature</h3>
-      <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
         <!-- Sélection du type de candidature -->
         <div class="mb-3">
           <label for="typeCandidature" class="form-label">Type de candidature</label>

@@ -1,26 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CandidatureService } from '../../services/candidature.service';
-import { CommonModule, Location } from '@angular/common'; // Importez Location ici
+import { CommonModule, Location } from '@angular/common';
 import { FooterComponent } from 'src/app/constantes/footer/footer.component';
 import { HeaderComponent } from 'src/app/constantes/header/header.component';
-import { FormsModule } from '@angular/forms'; // Importez FormsModule pour ngModel
+import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   standalone: true,
   selector: 'app-candidature-details',
   templateUrl: './candidature-details.component.html',
   styleUrls: ['./candidature-details.component.css'],
-  imports: [CommonModule, RouterModule, FooterComponent, HeaderComponent, FormsModule], // Ajoutez FormsModule
+  imports: [CommonModule, RouterModule, FooterComponent, HeaderComponent, FormsModule],
 })
 export class CandidatureDetailsComponent implements OnInit {
   candidature: any = {}; // Détails de la candidature
   documents: any[] = []; // Liste des documents
+  selectedDocumentUrl: SafeResourceUrl | null = null; // URL sécurisée pour l'aperçu
 
   constructor(
     private route: ActivatedRoute,
     private candidatureService: CandidatureService,
-    private location: Location // Injectez le service Location
+    private location: Location,
+    private sanitizer: DomSanitizer // Pour sécuriser les URLs
   ) {}
 
   ngOnInit(): void {
@@ -53,5 +56,23 @@ export class CandidatureDetailsComponent implements OnInit {
         alert('Une erreur est survenue lors de la mise à jour.');
       },
     });
+  }
+
+  // Méthode pour télécharger un document
+  downloadDocument(documentId: number, documentName: string): void {
+    this.candidatureService.downloadDocument(documentId).subscribe((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = documentName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  // Méthode pour afficher l'aperçu d'un document
+  previewDocument(documentId: number): void {
+    const documentUrl = this.candidatureService.getDocumentUrl(documentId);
+    this.selectedDocumentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(documentUrl);
   }
 }

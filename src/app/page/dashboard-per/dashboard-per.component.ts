@@ -134,46 +134,48 @@ export class DashboardPerComponent implements OnInit {
       this.selectedFiles[fieldName] = file;
     }
   }
-
   // Soumission du formulaire
   onSubmit() {
     if (this.candidatureForm.invalid) {
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
     }
-
-    // Définir la date de dépôt automatiquement
-    const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
-    this.candidatureForm.get('dateDepot')?.setValue(today);
-
-    // Créer un objet JSON avec les données du formulaire
-    const candidatureData = {
-        typeCandidature: this.candidatureForm.get('typeCandidature')?.value,
-        cohorteId: this.candidatureForm.get('cohorteId')?.value,
-        personnelId: this.candidatureForm.get('personnelId')?.value,
-        dateDepot: this.candidatureForm.get('dateDepot')?.value,
-        dateDebut: this.candidatureForm.get('dateDebut')?.value,
-        dateFin: this.candidatureForm.get('dateFin')?.value,
-        destination: this.candidatureForm.get('destination')?.value,
-        informationsVoyage: this.candidatureForm.get('informationsVoyage')?.value,
-        reglesCohorte: this.candidatureForm.get('reglesCohorte')?.value,
-    };
-    
-
+  
+    // Convertir le formulaire en JSON
+    const candidatureJson = JSON.stringify(this.candidatureForm.value);
+    console.log('JSON envoyé :', candidatureJson); // Afficher le JSON dans la console
+  
+    // Créer un objet FormData pour envoyer les fichiers
+    const formData = new FormData();
+  
+    // Ajouter les données de la candidature
+    formData.append('candidature', new Blob([candidatureJson], {
+      type: 'application/json', // Indiquer que cette partie est du JSON
+    }));
+  
+    // Ajouter les fichiers PDF sélectionnés
+    for (const key in this.selectedFiles) {
+      if (this.selectedFiles.hasOwnProperty(key)) {
+        formData.append('files', this.selectedFiles[key], this.selectedFiles[key].name);
+      }
+    }
+  
     // Envoi des données au back-end
-    this.http.post('http://localhost:8080/api/candidatures', candidatureData).subscribe(
-        (response) => {
-            alert('Candidature soumise avec succès !');
-            this.router.navigate(['/suivi-candidatures']);
-        },
-        (error) => {
-          console.error('Erreur lors de la soumission :', error);
-          // Afficher le message d'erreur renvoyé par le backend
-          if (error.error && error.error.message) {
-              alert(error.error.message); // Afficher le message d'erreur structuré
-          } else {
-              alert('Une erreur s\'est produite lors de la soumission de la candidature.');
-          }}
+    this.http.post('http://localhost:8080/api/candidatures', formData, {
+      headers: { 'Accept': 'application/json' } // Définir explicitement les en-têtes
+    }).subscribe(
+      (response) => {
+        alert('Candidature soumise avec succès !');
+        this.router.navigate(['/suivi-candidatures']);
+      },
+      (error) => {
+        console.error('Erreur lors de la soumission :', error);
+        if (error.error && error.error.message) {
+          alert(error.error.message); // Afficher le message d'erreur structuré
+        } else {
+          alert('Une erreur s\'est produite lors de la soumission de la candidature.');
+        }
+      }
     );
-}
+  }
 }
