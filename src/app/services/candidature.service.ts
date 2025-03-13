@@ -20,7 +20,6 @@ export class CandidatureService {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
- 
   // Créer une nouvelle candidature avec des fichiers
   createCandidature(candidature: any, files: File[]): Observable<any> {
     const formData = new FormData();
@@ -50,19 +49,20 @@ export class CandidatureService {
 
   // Télécharger un document
   downloadDocument(documentId: number): Observable<Blob> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Accept: 'application/octet-stream', // Indique que la réponse est un fichier binaire
-    });
-
     return this.http.get(`${this.apiUrl}/documents/${documentId}/download`, {
-      headers: headers,
-      responseType: 'blob', // Indique que la réponse est un Blob (fichier binaire)
+      responseType: 'blob',
     });
   }
 
-  // Récupérer l'URL d'un document pour l'aperçu
-  getDocumentUrl(documentId: number): string {
-    return `${this.apiUrl}/documents/${documentId}/download`;
+  // Récupérer l'URL d'un document
+  getDocumentUrl(documentId: number): Observable<string> {
+    return this.http.get(`${this.apiUrl}/documents/${documentId}/url`, {
+      responseType: 'text',
+    });
+  }
+
+  // Récupérer les candidatures par statut
+  getCandidaturesByStatut(statut: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}?statut=${statut}`);
   }
 }

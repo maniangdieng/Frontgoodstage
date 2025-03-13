@@ -1,0 +1,38 @@
+<app-header></app-header>
+
+<div class="container mt-4">
+  <!-- Bouton Retour -->
+  <button class="btn btn-secondary mb-3" (click)="goBack()">
+    <i class="bi bi-arrow-left"></i> Retour
+  </button>
+
+  <h2>Détails de la Candidature</h2>
+
+  <!-- Informations de la candidature -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Informations Générales</h5>
+      <p><strong>Date de Dépôt :</strong> {{ candidature.dateDepot | date }}</p>
+      <p><strong>Statut :</strong> {{ candidature.statut }}</p>
+      <p><strong>Date de Début :</strong> {{ candidature.dateDebut | date }}</p>
+      <p><strong>Date de Fin :</strong> {{ candidature.dateFin | date }}</p>
+      <p><strong>Destination :</strong> {{ candidature.destination }}</p>
+      <p><strong>Cohorte :</strong> {{ candidature.cohorteAnnee }}</p>
+      <p><strong>Personnel :</strong> {{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</p>
+    </div>
+  </div>
+
+  <!-- Liste des documents -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Documents Soumis</h5>
+      <ul class="list-group">
+        <li class="list-group-item" *ngFor="let doc of documents">
+          {{ doc.nom }} - <a [href]="doc.url" target="_blank">Télécharger</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
