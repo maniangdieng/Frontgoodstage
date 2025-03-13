@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HeaderComponent } from 'src/app/constantes/header/header.component';
 import { CohorteService } from '../../services/cohorte.service';
-import { CandidatureService } from '../../services/candidature.service'; // Importez le service Candidature
+import { CandidatureService } from '../../services/candidature.service';
 
 @Component({
   standalone: true,
@@ -24,18 +24,21 @@ export class DashboardDrcComponent implements OnInit {
 
   constructor(
     private cohorteService: CohorteService,
-    private candidatureService: CandidatureService, // Injectez le service Candidature
+    private candidatureService: CandidatureService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute
   ) {
-    // Formulaire pour les cohortes
-    this.cohorteForm = this.fb.group({
-      annee: ['', Validators.required],
-      dateOuverture: ['', Validators.required],
-      dateSemiCloture: ['', Validators.required],
-      dateClotureDef: ['', Validators.required],
-    });
+    // Formulaire pour les cohortes avec validateur personnalisé
+    this.cohorteForm = this.fb.group(
+      {
+        annee: ['', Validators.required],
+        dateOuverture: ['', Validators.required],
+        dateSemiCloture: ['', Validators.required],
+        dateClotureDef: ['', Validators.required],
+      },
+      { validators: this.dateOrderValidator }
+    );
   }
 
   ngOnInit(): void {
@@ -78,21 +81,57 @@ export class DashboardDrcComponent implements OnInit {
     });
   }
 
+  // Validateur personnalisé pour vérifier l'ordre des dates
+  dateOrderValidator(form: FormGroup) {
+    const dateOuverture = form.get('dateOuverture')?.value;
+    const dateSemiCloture = form.get('dateSemiCloture')?.value;
+    const dateClotureDef = form.get('dateClotureDef')?.value;
+
+    if (dateOuverture && dateSemiCloture && dateOuverture > dateSemiCloture) {
+      return { dateOrder: 'La date d\'ouverture doit être antérieure à la date de semi-clôture.' };
+    }
+    if (dateSemiCloture && dateClotureDef && dateSemiCloture > dateClotureDef) {
+      return { dateOrder: 'La date de semi-clôture doit être antérieure à la date de clôture définitive.' };
+    }
+    return null;
+  }
+
   // Soumettre le formulaire des cohortes
   onSubmit(): void {
     if (this.cohorteForm.valid) {
       const cohorte = this.cohorteForm.value;
-      if (this.isEditMode && this.selectedCohorteId) {
-        this.cohorteService.updateCohorte(this.selectedCohorteId, cohorte).subscribe(() => {
-          this.loadCohortes();
-          this.resetForm();
-        });
-      } else {
-        this.cohorteService.createCohorte(cohorte).subscribe(() => {
-          this.loadCohortes();
-          this.resetForm();
-        });
-      }
+  
+      // Vérifier si une cohorte existe déjà pour cette année
+      this.cohorteService.checkCohorteExistsByAnnee(cohorte.annee).subscribe((exists) => {
+        if (exists && !this.isEditMode) {
+          alert('Une cohorte existe déjà pour cette année.');
+          return;
+        }
+  
+        if (this.isEditMode && this.selectedCohorteId) {
+          this.cohorteService.updateCohorte(this.selectedCohorteId, cohorte).subscribe(
+            () => {
+              alert('Cohorte mise à jour avec succès !');
+              this.loadCohortes();
+              this.resetForm();
+            },
+            (error) => {
+              alert('Erreur : ' + error.error);
+            }
+          );
+        } else {
+          this.cohorteService.createCohorte(cohorte).subscribe(
+            () => {
+              alert('Cohorte créée avec succès !');
+              this.loadCohortes();
+              this.resetForm();
+            },
+            (error) => {
+              alert('Erreur : ' + error.error);
+            }
+          );
+        }
+      });
     }
   }
 

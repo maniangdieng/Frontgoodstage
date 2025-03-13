@@ -28,11 +28,24 @@
       <h5 class="card-title">Documents Soumis</h5>
       <ul class="list-group">
         <li class="list-group-item" *ngFor="let doc of documents">
-          {{ doc.nom }} - <a [href]="doc.url" target="_blank">Télécharger</a>
+          {{ doc.nomFichier }}
+          <!-- Bouton Aperçu -->
+          <button class="btn btn-link" style="border: 1px solid red;" (click)="previewDocument(doc.id)">Aperçu</button>
+          <!-- Bouton Télécharger -->
+          <button class="btn btn-link" style="border: 1px solid blue;" (click)="downloadDocument(doc.id)">Télécharger</button>
         </li>
       </ul>
     </div>
   </div>
+
+  <!-- Aperçu du document -->
+  <div class="card mb-4" *ngIf="selectedDocumentUrl">
+    <div class="card-body">
+      <h5 class="card-title">Aperçu du Document</h5>
+      <iframe [src]="selectedDocumentUrl" width="100%" height="500px"></iframe>
+    </div>
+  </div>
+
 </div>
 
 <app-footer></app-footer>

@@ -62,12 +62,12 @@ export class DashboardDrhComponent implements OnInit {
   // Charger les candidatures avec le statut "VALIDE"
   loadCandidaturesValides(): void {
     this.candidatureService.getCandidaturesByStatut('VALIDE').subscribe(
-      (data: Candidature[]) => {
-        this.candidatures = data;
+      (data) => {
+        console.log('Données reçues :', data); // Inspectez les données
+        this.candidatures = Array.isArray(data) ? data : []; // Assurez-vous que c'est un tableau
       },
       (error) => {
         console.error('Erreur lors de la récupération des candidatures', error);
-        // Vous pouvez également afficher un message d'erreur à l'utilisateur ici
       }
     );
   }

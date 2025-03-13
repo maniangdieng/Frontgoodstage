@@ -45,7 +45,7 @@
 
 /* Style pour le tableau */
 table {
-    width: 80%;
+    width: 99%;
     table-layout: fixed; /* Permet de mieux contrôler la largeur des colonnes */
     border-collapse: collapse;
 }

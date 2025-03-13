@@ -1,3 +1,4 @@
+import { CandidatureDetailsComponents } from './page/candidature-details-view/candidature-details-view.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
@@ -12,6 +13,8 @@ const routes: Routes = [
   { path: 'dashboard-drc', component: DashboardDrcComponent }, // Pas de slash ici
   { path: 'dashboard-drh', component: DashboardDrhComponent }, // Pas de slash ici
   { path: 'dashboard-dfc', component: DashboardDfcComponent }, // Pas de slash ici
+  { path: 'candidature-details-view/:id', component: CandidatureDetailsComponents }, // Route avec paramètre :id
+
   { path: 'candidature-details/:id', component: CandidatureDetailsComponent }, // Nouvelle route
 
 ];

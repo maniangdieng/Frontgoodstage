@@ -3,144 +3,144 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
 <div class="container-fluid">
-    <div class="row flex-nowrap">
-        <!-- Barre latérale -->
-        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 custom-bg">
-            <div class="d-flex flex-column align-items-start px-3 pt-2 text-white min-vh-100">
-                <a class="d-flex align-items-center pb-3 mb-md-0 text-white text-decoration-none">
-                    <span class="fs-5 d-none d-sm-inline">Bienvenue, DRC </span>
-                </a>
-                <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
-                    <li class="nav-item">
-                        <a [routerLink]="[]" fragment="gestionPeriodes" class="nav-link px-0 align-middle d-flex align-items-center text-white">
-                            <i class="fs-4 bi bi-calendar-check me-2"></i> 
-                            <span>Gestion des Périodes des Candidatures</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a [routerLink]="[]" fragment="gestionCandidatures" class="nav-link px-0 align-middle d-flex align-items-center text-white">
-                            <i class="fs-4 bi bi-file-earmark-text me-2"></i> 
-                            <span>Gestion des Candidatures</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Contenu principal -->
-        <div class="col py-3" id="content-area">
-            <div id="gestionPeriodes" class="content-section">
-                <h3>Gestion des Périodes des Candidatures</h3>
-                <p>Interface pour gérer les périodes de dépôt des candidatures.</p>
-
-                <!-- Formulaire pour créer ou modifier une cohorte -->
-                <form [formGroup]="cohorteForm" (ngSubmit)="onSubmit()" class="mb-4">
-                    <div class="form-group">
-                        <label for="annee">Année</label>
-                        <input id="annee" formControlName="annee" class="form-control" />
-                        <div *ngIf="cohorteForm.get('annee')?.invalid && cohorteForm.get('annee')?.touched" class="text-danger">
-                            L'année est obligatoire.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="dateOuverture">Date d'ouverture</label>
-                        <input id="dateOuverture" type="date" formControlName="dateOuverture" class="form-control" />
-                        <div *ngIf="cohorteForm.get('dateOuverture')?.invalid && cohorteForm.get('dateOuverture')?.touched" class="text-danger">
-                            La date d'ouverture est obligatoire.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="dateSemiCloture">Date de semi-clôture</label>
-                        <input id="dateSemiCloture" type="date" formControlName="dateSemiCloture" class="form-control" />
-                        <div *ngIf="cohorteForm.get('dateSemiCloture')?.invalid && cohorteForm.get('dateSemiCloture')?.touched" class="text-danger">
-                            La date de semi-clôture est obligatoire.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="dateClotureDef">Date de clôture définitive</label>
-                        <input id="dateClotureDef" type="date" formControlName="dateClotureDef" class="form-control" />
-                        <div *ngIf="cohorteForm.get('dateClotureDef')?.invalid && cohorteForm.get('dateClotureDef')?.touched" class="text-danger">
-                            La date de clôture définitive est obligatoire.
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary me-2">
-                        {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
-                    </button>
-                    <button type="button" (click)="resetForm()" class="btn btn-secondary">Annuler</button>
-                </form>
-
-                <!-- Tableau des cohortes -->
-                <h4>Liste des Cohortes</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Année</th>
-                            <th>Date d'ouverture</th>
-                            <th>Date de semi-clôture</th>
-                            <th>Date de clôture définitive</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let cohorte of cohortes">
-                            <td>{{ cohorte.id }}</td>
-                            <td>{{ cohorte.annee }}</td>
-                            <td>{{ cohorte.dateOuverture | date }}</td>
-                            <td>{{ cohorte.dateSemiCloture | date }}</td>
-                            <td>{{ cohorte.dateClotureDef | date }}</td>
-                            <td>
-                                <button (click)="editCohorte(cohorte)" class="btn btn-warning btn-sm me-2">Modifier</button>
-                                <button (click)="deleteCohorte(cohorte.id!)" class="btn btn-danger btn-sm">Supprimer</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-        </div>
-        <div id="gestionCandidatures" class="content-section">
-          
-            <!-- Tableau des candidatures -->
-            <h4>Liste des Candidatures</h4>
-            <table class="table">
-                <thead>
-                  <tr>
-                    
-                    <th>Date Dépôt</th>
-                    <th>Statut</th>
-                    <th>Date Début</th>
-                    <th>Date Fin</th>
-                    <th>Destination</th>
-                    <th>Cohorte</th>
-                    <th>PER</th>
-                    <th>Actions</th>
-
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let candidature of candidatures">
-                   
-                    <td>{{ candidature.dateDepot | date }}</td>
-                    <td>{{ candidature.statut }}</td>
-                    <td>{{ candidature.dateDebut | date }}</td>
-                    <td>{{ candidature.dateFin | date }}</td>
-                    <td>{{ candidature.destination }}</td>
-                        <td>{{ candidature.cohorteAnnee }}</td>
-                        <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
-                    
-                    <td>
-                        <button class="voir" [routerLink]="['/candidature-details', candidature.id]">
-                            Voir détails
-                        </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-          </div>
+  <div class="row flex-nowrap">
+    <!-- Barre latérale -->
+    <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 custom-bg">
+      <div class="d-flex flex-column align-items-start px-3 pt-2 text-white min-vh-100">
+        <a class="d-flex align-items-center pb-3 mb-md-0 text-white text-decoration-none">
+          <span class="fs-5 d-none d-sm-inline">Bienvenue, DRC </span>
+        </a>
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
+          <li class="nav-item">
+            <a [routerLink]="[]" fragment="gestionPeriodes" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-calendar-check me-2"></i>
+              <span>Gestion des Périodes des Candidatures</span>
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="[]" fragment="gestionCandidatures" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-file-earmark-text me-2"></i>
+              <span>Gestion des Candidatures</span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
+
+    <!-- Contenu principal -->
+    <div class="col py-3" id="content-area">
+      <div id="gestionPeriodes" class="content-section">
+        <h3>Gestion des Périodes des Candidatures</h3>
+        <p>Interface pour gérer les périodes de dépôt des candidatures.</p>
+
+        <!-- Formulaire pour créer ou modifier une cohorte -->
+        <form [formGroup]="cohorteForm" (ngSubmit)="onSubmit()" class="mb-4">
+          <div class="form-group">
+            <label for="annee">Année</label>
+            <input id="annee" formControlName="annee" class="form-control" />
+            <div *ngIf="cohorteForm.get('annee')?.invalid && cohorteForm.get('annee')?.touched" class="text-danger">
+              L'année est obligatoire.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dateOuverture">Date d'ouverture</label>
+            <input id="dateOuverture" type="date" formControlName="dateOuverture" class="form-control" />
+            <div *ngIf="cohorteForm.get('dateOuverture')?.invalid && cohorteForm.get('dateOuverture')?.touched" class="text-danger">
+              La date d'ouverture est obligatoire.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dateSemiCloture">Date de semi-clôture</label>
+            <input id="dateSemiCloture" type="date" formControlName="dateSemiCloture" class="form-control" />
+            <div *ngIf="cohorteForm.get('dateSemiCloture')?.invalid && cohorteForm.get('dateSemiCloture')?.touched" class="text-danger">
+              La date de semi-clôture est obligatoire.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dateClotureDef">Date de clôture définitive</label>
+            <input id="dateClotureDef" type="date" formControlName="dateClotureDef" class="form-control" />
+            <div *ngIf="cohorteForm.get('dateClotureDef')?.invalid && cohorteForm.get('dateClotureDef')?.touched" class="text-danger">
+              La date de clôture définitive est obligatoire.
+            </div>
+          </div>
+
+          <!-- Correction ici -->
+          <div *ngIf="cohorteForm.errors && cohorteForm.errors['dateOrder']" class="text-danger">
+            {{ cohorteForm.errors['dateOrder'] }}
+          </div>
+
+          <button type="submit" class="btn btn-primary me-2">
+            {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+          </button>
+          <button type="button" (click)="resetForm()" class="btn btn-secondary">Annuler</button>
+        </form>
+
+        <!-- Tableau des cohortes -->
+        <h4>Liste des Cohortes</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Année</th>
+              <th>Date d'ouverture</th>
+              <th>Date de semi-clôture</th>
+              <th>Date de clôture définitive</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cohorte of cohortes">
+              <td>{{ cohorte.id }}</td>
+              <td>{{ cohorte.annee }}</td>
+              <td>{{ cohorte.dateOuverture | date }}</td>
+              <td>{{ cohorte.dateSemiCloture | date }}</td>
+              <td>{{ cohorte.dateClotureDef | date }}</td>
+              <td>
+                <button (click)="editCohorte(cohorte)" class="btn btn-warning btn-sm me-2">Modifier</button>
+                <button (click)="deleteCohorte(cohorte.id!)" class="btn btn-danger btn-sm">Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="gestionCandidatures" class="content-section">
+        <!-- Tableau des candidatures -->
+        <h4>Liste des Candidatures</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date Dépôt</th>
+              <th>Statut</th>
+              <th>Date Début</th>
+              <th>Date Fin</th>
+              <th>Destination</th>
+              <th>Cohorte</th>
+              <th>PER</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let candidature of candidatures">
+              <td>{{ candidature.dateDepot | date }}</td>
+              <td>{{ candidature.statut }}</td>
+              <td>{{ candidature.dateDebut | date }}</td>
+              <td>{{ candidature.dateFin | date }}</td>
+              <td>{{ candidature.destination }}</td>
+              <td>{{ candidature.cohorteAnnee }}</td>
+              <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+              <td>
+                <button class="voir" [routerLink]="['/candidature-details', candidature.id]">
+                  Voir détails
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>

@@ -24,6 +24,10 @@ export class CohorteService {
   createCohorte(cohorte: any): Observable<any> {
     return this.http.post<any>(this.apiUrl, cohorte);
   }
+    // Vérifier si une cohorte existe déjà pour une année donnée
+    checkCohorteExistsByAnnee(annee: number): Observable<boolean> {
+      return this.http.get<boolean>(`${this.apiUrl}/exists?annee=${annee}`);
+    }
 
   // Mettre à jour une cohorte existante
   updateCohorte(id: number, cohorte: any): Observable<any> {
