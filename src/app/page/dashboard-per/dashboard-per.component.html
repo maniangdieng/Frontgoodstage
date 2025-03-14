@@ -54,6 +54,9 @@
     <!-- Contenu principal -->
     <div id="candidature" class="content-section">
       <h3>Déposer Candidature</h3>
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
       <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
         <!-- Sélection du type de candidature -->
         <div class="mb-3">
