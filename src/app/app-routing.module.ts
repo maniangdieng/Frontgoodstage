@@ -1,6 +1,9 @@
 import { CandidatureDetailsComponents } from './page/candidature-details-view/candidature-details-view.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './guards/auth.guard';
+
 
 import { DashboardPerComponent } from './page/dashboard-per/dashboard-per.component';
 import { DashboardDrcComponent } from './page/dashboard-drc/dashboard-drc.component';
@@ -9,7 +12,9 @@ import { DashboardDfcComponent } from './page/dashboard-dfc/dashboard-dfc.compon
 import { CandidatureDetailsComponent } from './page/candidature-details/candidature-details.component';
 
 const routes: Routes = [
-  { path: 'dashboard-per', component: DashboardPerComponent }, // Pas de slash ici
+  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'dashboard-per', component: DashboardPerComponent, canActivate: [AuthGuard] }, // Pas de slash ici
   { path: 'dashboard-drc', component: DashboardDrcComponent }, // Pas de slash ici
   { path: 'dashboard-drh', component: DashboardDrhComponent }, // Pas de slash ici
   { path: 'dashboard-dfc', component: DashboardDfcComponent }, // Pas de slash ici

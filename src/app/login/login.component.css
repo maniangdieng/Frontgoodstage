@@ -1,0 +1,17 @@
+.container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-header {
+    font-size: 1.5rem;
+  }
+  
+  .btn-block {
+    width: 100%;
+  }

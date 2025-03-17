@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.service';
 
 // Assurez-vous que HeaderComponent et FooterComponent sont standalone avant de les importer ici
 import { HeaderComponent } from '../../constantes/header/header.component';
@@ -38,11 +39,13 @@ export class DashboardPerComponent implements OnInit {
   cohortes: Cohorte[] = []; // Liste des cohortes disponibles
   utilisateurs: Utilisateur[] = []; // Liste de tous les utilisateurs
   errorMessage: string | null = null; // Pour afficher les messages d'erreur
+  user: any;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService // Injection du service d'authentification
   ) {
     // Initialisation du formulaire réactif
     this.candidatureForm = this.fb.group({
@@ -59,6 +62,12 @@ export class DashboardPerComponent implements OnInit {
   }
 
   ngOnInit() {
+
+      // Vérifier si l'utilisateur est authentifié
+    if (!this.authService.isAuthenticated()) {
+      this.authService.logout(); // Rediriger vers la page de connexion
+      return;
+    }
     this.handleFragment();
     this.loadCohortes(); // Charger les cohortes au démarrage
     this.loadUtilisateurs(); // Charger tous les utilisateurs au démarrage
@@ -66,6 +75,12 @@ export class DashboardPerComponent implements OnInit {
     // Charger la cohorte en cours (année en cours)
     const currentYear = new Date().getFullYear();
     this.loadCurrentCohorte(currentYear);
+
+    this.user = this.authService.getUser(); // Récupérer l'utilisateur connecté
+
+    // Afficher les informations de l'utilisateur dans la console pour le débogage
+    console.log('Utilisateur connecté :', this.user);
+
 
     // Écoute des changements d'URL pour détecter les fragments dynamiquement
     this.router.events
@@ -237,5 +252,8 @@ export class DashboardPerComponent implements OnInit {
         }
       }
     );
+  }
+  logout() {
+    this.authService.logout();
   }
 }

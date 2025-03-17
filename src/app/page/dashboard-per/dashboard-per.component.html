@@ -7,9 +7,9 @@
     <!-- Barre latérale -->
     <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 custom-bg">
       <div class="d-flex flex-column align-items-start px-3 pt-2 text-white min-vh-100">
-        <a class="d-flex align-items-center pb-3 mb-md-0 text-white text-decoration-none text-white">
-          <span class="fs-5 d-none d-sm-inline">Bienvenue, "users"</span>
-        </a>
+        <div class="d-flex align-items-center pb-3 mb-md-0 text-white text-decoration-none text-white">
+          <span class="fs-5 d-none d-sm-inline">Bienvenue, {{ user?.nom }} {{ user?.prenom }}</span>
+        </div>
         <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
           <li class="nav-item">
             <a [routerLink]="[]" fragment="candidature" class="nav-link px-0 align-middle d-flex align-items-center text-white">
@@ -46,6 +46,9 @@
               <i class="fs-4 bi bi-credit-card-2-front me-2"></i>
               <span class="text-nowrap">Suivi des subventions</span>
             </a>
+          </li>
+          <li>
+            <button class="btn btn-danger" (click)="logout()">Déconnexion</button>
           </li>
         </ul>
       </div>
@@ -106,10 +109,7 @@
             <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')">
           </div>
 
-          <div class="mb-3">
-            <label for="informationsVoyage" class="form-label">Informations sur le voyage</label>
-            <textarea id="informationsVoyage" class="form-control" formControlName="informationsVoyage"></textarea>
-          </div>
+        
         </div>
 
         <!-- Champs spécifiques pour Ancien Enseignant -->
@@ -119,10 +119,7 @@
             <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
           </div>
 
-          <div class="mb-3">
-            <label for="reglesCohorte" class="form-label">Respect des règles de cohorte</label>
-            <input type="checkbox" id="reglesCohorte" class="form-check-input" formControlName="reglesCohorte">
-          </div>
+          
         </div>
 
         <!-- Bouton de soumission -->
