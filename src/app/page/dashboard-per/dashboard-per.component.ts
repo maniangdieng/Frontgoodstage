@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
+import { CandidatureService } from '../../services/candidature.service';
 
 // Assurez-vous que HeaderComponent et FooterComponent sont standalone avant de les importer ici
 import { HeaderComponent } from '../../constantes/header/header.component';
@@ -40,11 +41,13 @@ export class DashboardPerComponent implements OnInit {
   utilisateurs: Utilisateur[] = []; // Liste de tous les utilisateurs
   errorMessage: string | null = null; // Pour afficher les messages d'erreur
   user: any;
+  candidatures: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
+    private candidatureService: CandidatureService,
     private authService: AuthService // Injection du service d'authentification
   ) {
     // Initialisation du formulaire réactif
@@ -59,20 +62,22 @@ export class DashboardPerComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Vérifier si l'utilisateur est authentifié
+
+      // Vérifier si l'utilisateur est authentifié
     if (!this.authService.isAuthenticated()) {
       this.authService.logout(); // Rediriger vers la page de connexion
       return;
     }
+
+    // Charger les données nécessaires
     this.handleFragment();
     this.loadCohortes(); // Charger les cohortes au démarrage
     this.loadUtilisateurs(); // Charger tous les utilisateurs au démarrage
+    this.loadCandidatures(); // Charger les candidatures de l'utilisateur connecté
 
     // Charger la cohorte en cours (année en cours)
     const currentYear = new Date().getFullYear();
     this.loadCurrentCohorte(currentYear);
-
-    this.user = this.authService.getUser(); // Récupérer l'utilisateur connecté
 
     // Afficher les informations de l'utilisateur dans la console pour le débogage
     console.log('Utilisateur connecté :', this.user);
@@ -83,6 +88,41 @@ export class DashboardPerComponent implements OnInit {
       .subscribe(() => {
         this.handleFragment();
       });
+  }
+
+  // Charger les candidatures de l'utilisateur connecté
+  loadCandidatures() {
+    if (this.user && this.user.id) {
+      this.candidatureService.getMesCandidatures(this.user.id).subscribe(
+        (data) => {
+          this.candidatures = data;
+        },
+        (error) => {
+          console.error('Erreur lors de la récupération des candidatures', error);
+        }
+      );
+    } else {
+      console.error('Utilisateur non connecté ou ID non disponible');
+    }
+  }
+
+  // Supprimer une candidature
+  supprimerCandidature(id: number) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
+      this.candidatureService.deleteCandidature(id).subscribe(
+        () => {
+          this.loadCandidatures(); // Recharger la liste après suppression
+        },
+        (error) => {
+          console.error('Erreur lors de la suppression de la candidature', error);
+        }
+      );
+    }
+  }
+
+  // Modifier une candidature
+  modifierCandidature(id: number) {
+    this.router.navigate(['/modifier-candidature', id]);
   }
 
   // Charger les cohortes depuis le back-end
@@ -242,7 +282,6 @@ export class DashboardPerComponent implements OnInit {
       }
     );
   }
-
   logout() {
     this.authService.logout();
   }

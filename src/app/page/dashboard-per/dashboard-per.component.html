@@ -105,6 +105,31 @@
         <button type="submit" class="btn btn-primary">Soumettre</button>
       </form>
     </div>
+    <div id="suiviCandidatures" class="content-section">
+      <h3>Suivi de mes candidatures</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            
+            <th>Date de dépôt</th>
+            <th>Destination</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let candidature of candidatures">
+            <td>{{ candidature.dateDepot | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ candidature.destination }}</td>
+            <td>{{ candidature.statut }}</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-2" (click)="modifierCandidature(candidature.id)">Modifier</button>
+              <button class="btn btn-danger btn-sm" (click)="supprimerCandidature(candidature.id)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

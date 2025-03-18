@@ -26,6 +26,9 @@ export class AuthService {
     );
   }
   
+
+
+  
   getUser(): any {
     const user = localStorage.getItem(this.userKey);
     return user ? JSON.parse(user) : null; // Récupérer l'utilisateur depuis le localStorage
