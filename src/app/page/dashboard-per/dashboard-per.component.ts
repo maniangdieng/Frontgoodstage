@@ -49,21 +49,17 @@ export class DashboardPerComponent implements OnInit {
   ) {
     // Initialisation du formulaire réactif
     this.candidatureForm = this.fb.group({
-      typeCandidature: ['nouveau', Validators.required],
       cohorteId: ['', Validators.required],
-      personnelId: ['', Validators.required],
+      personnelId: [this.authService.getUser()?.id, Validators.required], // Utiliser l'ID de l'utilisateur connecté
       dateDepot: [''], // La date de dépôt sera automatiquement définie
-      dateDebut: ['', Validators.required], // Nouveau champ
-      dateFin: ['', Validators.required], // Nouveau champ
+      dateDebut: ['', Validators.required],
+      dateFin: ['', Validators.required],
       destination: ['', Validators.required],
-      informationsVoyage: [''],
-      reglesCohorte: [false],
     });
   }
 
   ngOnInit() {
-
-      // Vérifier si l'utilisateur est authentifié
+    // Vérifier si l'utilisateur est authentifié
     if (!this.authService.isAuthenticated()) {
       this.authService.logout(); // Rediriger vers la page de connexion
       return;
@@ -80,7 +76,6 @@ export class DashboardPerComponent implements OnInit {
 
     // Afficher les informations de l'utilisateur dans la console pour le débogage
     console.log('Utilisateur connecté :', this.user);
-
 
     // Écoute des changements d'URL pour détecter les fragments dynamiquement
     this.router.events
@@ -149,20 +144,6 @@ export class DashboardPerComponent implements OnInit {
     }
   }
 
-  // Gestion du changement de type de candidature
-  onTypeChange() {
-    const type = this.candidatureForm.get('typeCandidature')?.value;
-    if (type === 'nouveau') {
-      this.candidatureForm.get('informationsVoyage')?.setValidators([Validators.required]);
-      this.candidatureForm.get('reglesCohorte')?.clearValidators();
-    } else if (type === 'ancien') {
-      this.candidatureForm.get('reglesCohorte')?.setValidators([Validators.requiredTrue]);
-      this.candidatureForm.get('informationsVoyage')?.clearValidators();
-    }
-    this.candidatureForm.get('informationsVoyage')?.updateValueAndValidity();
-    this.candidatureForm.get('reglesCohorte')?.updateValueAndValidity();
-  }
-
   // Gestion de la sélection des fichiers
   onFileChange(event: any, fieldName: string) {
     if (event.target.files.length > 0) {
@@ -174,30 +155,30 @@ export class DashboardPerComponent implements OnInit {
   // Soumission du formulaire
   onSubmit() {
     this.errorMessage = null; // Réinitialiser le message d'erreur
-
+  
     if (this.candidatureForm.invalid) {
       this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
       return;
     }
-
+  
     // Définir la date de dépôt automatiquement
     const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
     this.candidatureForm.get('dateDepot')?.setValue(today);
-
+  
     // Récupérer la cohorte sélectionnée
     const selectedCohorteId = this.candidatureForm.get('cohorteId')?.value;
     const selectedCohorte = this.cohortes.find((c) => c.id === selectedCohorteId);
-
+  
     if (!selectedCohorte) {
       this.errorMessage = 'Veuillez sélectionner une cohorte valide.';
       return;
     }
-
+  
     // Vérifier que la date de dépôt est dans la période de la cohorte
     const dateDepot = new Date(this.candidatureForm.get('dateDepot')?.value);
     const dateOuverture = new Date(selectedCohorte.dateOuverture);
     const dateClotureDef = new Date(selectedCohorte.dateClotureDef);
-
+  
     if (dateDepot < dateOuverture) {
       this.errorMessage = 'La date de dépôt est antérieure à la date d\'ouverture de la cohorte.';
       return;
@@ -206,35 +187,43 @@ export class DashboardPerComponent implements OnInit {
       this.errorMessage = 'La date de dépôt est postérieure à la date de clôture définitive de la cohorte.';
       return;
     }
-
+  
+    // Vérifier les documents requis en fonction du statut de l'enseignant
+    if (this.isEnseignantNouveau() && !this.selectedFiles['arreteTitularisation']) {
+      this.errorMessage = 'Un arrêté de titularisation est requis pour les nouveaux enseignants.';
+      return;
+    }
+    if (this.isEnseignantAncien() && !this.selectedFiles['justificatifPrecedentVoyage']) {
+      this.errorMessage = 'Un justificatif du précédent voyage est requis pour les anciens enseignants.';
+      return;
+    }
+  
     // Créer un objet JSON avec les données du formulaire
     const candidatureData = {
-      typeCandidature: this.candidatureForm.get('typeCandidature')?.value,
       cohorteId: selectedCohorteId,
-      personnelId: this.candidatureForm.get('personnelId')?.value,
+      personnelId: this.user.id, // Utiliser l'ID de l'utilisateur connecté
       dateDepot: today,
       dateDebut: this.candidatureForm.get('dateDebut')?.value,
       dateFin: this.candidatureForm.get('dateFin')?.value,
       destination: this.candidatureForm.get('destination')?.value,
-      informationsVoyage: this.candidatureForm.get('informationsVoyage')?.value,
-      reglesCohorte: this.candidatureForm.get('reglesCohorte')?.value,
     };
-
+  
     // Convertir le formulaire en JSON
     const candidatureJson = JSON.stringify(candidatureData);
     console.log('JSON envoyé :', candidatureJson); // Afficher le JSON dans la console
-
+  
     // Créer un objet FormData pour envoyer les fichiers
     const formData = new FormData();
     formData.append('candidature', new Blob([candidatureJson], { type: 'application/json' }));
-
-    // Ajouter les fichiers PDF sélectionnés
-    for (const key in this.selectedFiles) {
-      if (this.selectedFiles.hasOwnProperty(key)) {
-        formData.append('files', this.selectedFiles[key], this.selectedFiles[key].name);
-      }
+  
+    // Ajouter les fichiers avec les clés attendues par le backend
+    if (this.isEnseignantNouveau() && this.selectedFiles['arreteTitularisation']) {
+      formData.append('arreteTitularisation', this.selectedFiles['arreteTitularisation']);
     }
-
+    if (this.isEnseignantAncien() && this.selectedFiles['justificatifPrecedentVoyage']) {
+      formData.append('justificatifPrecedentVoyage', this.selectedFiles['justificatifPrecedentVoyage']);
+    }
+  
     // Envoi des données au back-end
     this.http.post('http://localhost:8080/api/candidatures', formData, {
       headers: { 'Accept': 'application/json' }
@@ -253,7 +242,19 @@ export class DashboardPerComponent implements OnInit {
       }
     );
   }
+
   logout() {
     this.authService.logout();
   }
+// Méthode pour vérifier si l'enseignant est nouveau
+isEnseignantNouveau(): boolean {
+  // Supposons que vous avez une méthode dans le backend pour vérifier si l'enseignant a déjà effectué un voyage
+  // Ici, nous simulons cette vérification en utilisant une propriété de l'utilisateur connecté
+  return !this.user?.hasVoyageValide; // Si l'utilisateur n'a pas de voyage validé, il est nouveau
+}
+
+// Méthode pour vérifier si l'enseignant est ancien
+isEnseignantAncien(): boolean {
+  return !this.isEnseignantNouveau(); // Si l'utilisateur a déjà effectué un voyage, il est ancien
+}
 }

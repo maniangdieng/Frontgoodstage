@@ -61,28 +61,11 @@
         {{ errorMessage }}
       </div>
       <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
-        <!-- Sélection du type de candidature -->
-        <div class="mb-3">
-          <label for="typeCandidature" class="form-label">Type de candidature</label>
-          <select id="typeCandidature" class="form-select" formControlName="typeCandidature" (change)="onTypeChange()">
-            <option value="nouveau">Nouveau Titulaire</option>
-            <option value="ancien">Ancien Enseignant</option>
-          </select>
-        </div>
-
         <!-- Sélection de la cohorte -->
         <div class="mb-3">
           <label for="cohorte" class="form-label">Cohorte</label>
           <select id="cohorte" class="form-select" formControlName="cohorteId" required>
             <option *ngFor="let cohorte of cohortes" [value]="cohorte.id">{{ cohorte.annee }}</option>
-          </select>
-        </div>
-
-        <!-- Sélection de l'utilisateur -->
-        <div class="mb-3">
-          <label for="utilisateur" class="form-label">Utilisateur</label>
-          <select id="utilisateur" class="form-select" formControlName="personnelId" required>
-            <option *ngFor="let utilisateur of utilisateurs" [value]="utilisateur.id">{{ utilisateur.nom }} {{ utilisateur.prenom }}</option>
           </select>
         </div>
 
@@ -103,23 +86,19 @@
         </div>
 
         <!-- Champs spécifiques pour Nouveau Titulaire -->
-        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'nouveau'">
+        <div *ngIf="isEnseignantNouveau()">
           <div class="mb-3">
             <label for="arreteTitularisation" class="form-label">Arrêté de titularisation</label>
-            <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')">
+            <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')" required>
           </div>
-
-        
         </div>
 
         <!-- Champs spécifiques pour Ancien Enseignant -->
-        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'ancien'">
+        <div *ngIf="isEnseignantAncien()">
           <div class="mb-3">
             <label for="justificatifPrecedentVoyage" class="form-label">Justificatif du précédent voyage</label>
-            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
+            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')" required>
           </div>
-
-          
         </div>
 
         <!-- Bouton de soumission -->
