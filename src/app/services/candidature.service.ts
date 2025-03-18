@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs'; // Ajout de 'of' pour retourner un Observable vide en cas d'erreur
+import { catchError } from 'rxjs/operators'; // Ajout de 'catchError' pour gérer les erreurs
 
 @Injectable({
   providedIn: 'root',
@@ -62,7 +62,17 @@ export class CandidatureService {
     });
   }
 
+  // Récupérer les candidatures par statut
   getCandidaturesByStatut(statut: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/statut/${statut}`);
+  }
+
+  getMesCandidatures(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/mes-candidatures/${userId}`, { withCredentials: true }).pipe(
+      catchError((error) => {
+        console.error('Erreur lors de la récupération des candidatures', error);
+        return of([]); // Retourne un tableau vide en cas d'erreur
+      })
+    );
   }
 }
