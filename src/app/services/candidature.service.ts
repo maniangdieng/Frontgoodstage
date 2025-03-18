@@ -43,6 +43,16 @@ export class CandidatureService {
     return this.http.put<any>(`${this.apiUrl}/${id}`, candidature);
   }
 
+  // Valider une candidature
+  validateCandidature(candidatureId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${candidatureId}/validate`, {}).pipe(
+      catchError((error) => {
+        console.error('Erreur lors de la validation de la candidature', error);
+        return of(null); // Retourne null en cas d'erreur
+      })
+    );
+  }
+
   // Supprimer une candidature
   deleteCandidature(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);

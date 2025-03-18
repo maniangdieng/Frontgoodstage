@@ -62,7 +62,8 @@
         <label for="commentaire" class="form-label">Commentaire</label>
         <textarea class="form-control" id="commentaire" rows="3" [(ngModel)]="candidature.commentaire"></textarea>
       </div>
-      <button class="voir" (click)="updateCandidature()">Mettre à jour</button>
+      <button class="btn btn-primary" (click)="updateCandidature()">Mettre à jour</button>
+      <button class="btn btn-success ms-2" (click)="validateCandidature()">Valider la Candidature</button>
     </div>
   </div>
 </div>

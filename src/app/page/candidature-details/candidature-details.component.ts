@@ -47,9 +47,23 @@ export class CandidatureDetailsComponent implements OnInit {
     });
   }
 
-  // Revenir à la page précédente
-  goBack(): void {
-    this.location.back();
+  // Valider la candidature
+  validateCandidature(): void {
+    if (!this.candidature.statut || !this.candidature.commentaire) {
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    this.candidatureService.validateCandidature(this.candidature.id).subscribe({
+      next: (response) => {
+        alert('Candidature validée avec succès ! Un voyage a été créé.');
+        this.loadCandidatureDetails(this.candidature.id); // Recharger les détails
+      },
+      error: (err) => {
+        console.error('Erreur lors de la validation de la candidature', err);
+        alert('Une erreur est survenue lors de la validation.');
+      },
+    });
   }
 
   // Mettre à jour la candidature
@@ -89,20 +103,26 @@ export class CandidatureDetailsComponent implements OnInit {
     });
   }
 
+  // Aperçu d'un document
   previewDocument(documentId: number): void {
     const documentUrl = `http://localhost:8080/api/documents/${documentId}/preview`;
     this.selectedDocumentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(documentUrl);
-  
+
     // Vérifier si l'URL est valide
     fetch(documentUrl)
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           throw new Error('Fichier non trouvé');
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Erreur lors du chargement du document', error);
         alert('Impossible de charger l\'aperçu du document.');
       });
+  }
+
+  // Méthode pour revenir à la page précédente
+  goBack(): void {
+    this.location.back();
   }
 }
