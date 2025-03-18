@@ -69,6 +69,11 @@ export class DashboardPerComponent implements OnInit {
       return;
     }
 
+      // Récupérer l'utilisateur connecté
+    this.user = this.authService.getUser();
+    console.log('Utilisateur connecté :', this.user);
+
+
     // Charger les données nécessaires
     this.handleFragment();
     this.loadCohortes(); // Charger les cohortes au démarrage
