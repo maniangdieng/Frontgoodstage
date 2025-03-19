@@ -10,6 +10,7 @@ import { DashboardDrcComponent } from './page/dashboard-drc/dashboard-drc.compon
 import { DashboardDrhComponent } from './page/dashboard-drh/dashboard-drh.component';
 import { DashboardDfcComponent } from './page/dashboard-dfc/dashboard-dfc.component';
 import { CandidatureDetailsComponent } from './page/candidature-details/candidature-details.component';
+import { ModifierCandidatureComponent } from './page/modifier-candidature/modifier-candidature.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,6 +22,8 @@ const routes: Routes = [
   { path: 'candidature-details-view/:id', component: CandidatureDetailsComponents }, // Route avec paramètre :id
 
   { path: 'candidature-details/:id', component: CandidatureDetailsComponent }, // Nouvelle route
+  { path: 'modifier-candidature/:id', component: ModifierCandidatureComponent }, // Route pour modifier une candidature
+
 
 ];
 
