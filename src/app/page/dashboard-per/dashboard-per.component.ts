@@ -111,7 +111,15 @@ export class DashboardPerComponent implements OnInit {
       console.error('Utilisateur non connecté ou ID non disponible');
     }
   }
+// Dans DashboardPerComponent
+isCohorteCloturee(cohorteId: number): boolean {
+  const cohorte = this.cohortes.find(c => c.id === cohorteId);
+  if (!cohorte) return true; // Si la cohorte n'est pas trouvée, considérez-la comme clôturée
 
+  const dateCloture = new Date(cohorte.dateClotureDef);
+  const aujourdHui = new Date();
+  return aujourdHui > dateCloture;
+}
   // Supprimer une candidature
   supprimerCandidature(id: number) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
@@ -126,11 +134,21 @@ export class DashboardPerComponent implements OnInit {
     }
   }
 
-  // Modifier une candidature
-  modifierCandidature(id: number) {
-    this.router.navigate(['/modifier-candidature', id]);
+  // Dans DashboardPerComponent
+modifierCandidature(id: number) {
+  const candidature = this.candidatures.find(c => c.id === id);
+  if (!candidature) {
+    console.error('Candidature non trouvée');
+    return;
   }
 
+  if (this.isCohorteCloturee(candidature.cohorteId)) {
+    alert('La date de clôture de la cohorte est passée. Vous ne pouvez plus modifier cette candidature.');
+    return;
+  }
+
+  this.router.navigate(['/modifier-candidature', id]);
+}
   // Charger les cohortes depuis le back-end
   loadCohortes() {
     this.http.get<Cohorte[]>('http://localhost:8080/api/cohortes').subscribe(

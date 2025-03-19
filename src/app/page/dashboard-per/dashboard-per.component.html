@@ -61,11 +61,21 @@
         {{ errorMessage }}
       </div>
       <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+       
+
         <!-- Sélection de la cohorte -->
         <div class="mb-3">
           <label for="cohorte" class="form-label">Cohorte</label>
           <select id="cohorte" class="form-select" formControlName="cohorteId" required>
             <option *ngFor="let cohorte of cohortes" [value]="cohorte.id">{{ cohorte.annee }}</option>
+          </select>
+        </div>
+
+        <!-- Sélection de l'utilisateur -->
+        <div class="mb-3">
+          <label for="utilisateur" class="form-label">Utilisateur</label>
+          <select id="utilisateur" class="form-select" formControlName="personnelId" required>
+            <option *ngFor="let utilisateur of utilisateurs" [value]="utilisateur.id">{{ utilisateur.nom }} {{ utilisateur.prenom }}</option>
           </select>
         </div>
 
@@ -86,19 +96,23 @@
         </div>
 
         <!-- Champs spécifiques pour Nouveau Titulaire -->
-        <div *ngIf="isEnseignantNouveau()">
+        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'nouveau'">
           <div class="mb-3">
             <label for="arreteTitularisation" class="form-label">Arrêté de titularisation</label>
-            <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')" required>
+            <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')">
           </div>
+
+        
         </div>
 
         <!-- Champs spécifiques pour Ancien Enseignant -->
-        <div *ngIf="isEnseignantAncien()">
+        <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'ancien'">
           <div class="mb-3">
             <label for="justificatifPrecedentVoyage" class="form-label">Justificatif du précédent voyage</label>
-            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')" required>
+            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
           </div>
+
+          
         </div>
 
         <!-- Bouton de soumission -->

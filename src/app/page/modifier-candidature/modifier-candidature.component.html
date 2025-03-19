@@ -1,0 +1,138 @@
+<app-header></app-header>
+
+<div class="container mt-4">
+  <!-- Bouton Retour -->
+  <button type="button" class="btn btn-secondary mb-3" (click)="goBack()">
+    <i class="bi bi-arrow-left"></i> Retour
+  </button>
+
+  <h2>Modifier la Candidature</h2>
+
+  <!-- Informations de la candidature -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Informations Générales</h5>
+      <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="mb-3">
+          <label for="dateDebut" class="form-label">Date de Début <span class="text-danger">*</span></label>
+          <input 
+            type="date" 
+            id="dateDebut" 
+            class="form-control" 
+            formControlName="dateDebut"
+            [class.is-invalid]="candidatureForm.get('dateDebut')?.touched && candidatureForm.get('dateDebut')?.invalid"
+          >
+          <div class="invalid-feedback" *ngIf="candidatureForm.get('dateDebut')?.hasError('required')">
+            La date de début est requise.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="dateFin" class="form-label">Date de Fin <span class="text-danger">*</span></label>
+          <input 
+            type="date" 
+            id="dateFin" 
+            class="form-control" 
+            formControlName="dateFin"
+            [class.is-invalid]="candidatureForm.get('dateFin')?.touched && candidatureForm.get('dateFin')?.invalid"
+          >
+          <div class="invalid-feedback" *ngIf="candidatureForm.get('dateFin')?.hasError('required')">
+            La date de fin est requise.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="destination" class="form-label">Destination <span class="text-danger">*</span></label>
+          <input 
+            type="text" 
+            id="destination" 
+            class="form-control" 
+            formControlName="destination"
+            [class.is-invalid]="candidatureForm.get('destination')?.touched && candidatureForm.get('destination')?.invalid"
+          >
+          <div class="invalid-feedback" *ngIf="candidatureForm.get('destination')?.hasError('required')">
+            La destination est requise.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="cohorteId" class="form-label">Cohorte <span class="text-danger">*</span></label>
+          <input 
+            type="text" 
+            id="cohorteId" 
+            class="form-control" 
+            [value]="candidature?.cohorteAnnee || ''"
+            readonly
+          >
+          <input type="hidden" formControlName="cohorteId">
+          <div class="invalid-feedback" *ngIf="candidatureForm.get('cohorteId')?.touched && candidatureForm.get('cohorteId')?.invalid">
+            La cohorte est requise.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="personnelId" class="form-label">Personnel <span class="text-danger">*</span></label>
+          <input 
+            type="text" 
+            id="personnelId" 
+            class="form-control" 
+            [value]="(candidature?.personnelNom || '') + ' ' + (candidature?.personnelPrenom || '')"
+            readonly
+          >
+          <input type="hidden" formControlName="personnelId">
+          <div class="invalid-feedback" *ngIf="candidatureForm.get('personnelId')?.touched && candidatureForm.get('personnelId')?.invalid">
+            Le personnel est requis.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="candidatureForm.invalid">
+          Enregistrer
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des documents -->
+  <div class="card mb-4" *ngIf="documents?.length">
+    <div class="card-body">
+      <h5 class="card-title">Documents Soumis</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let doc of documents">
+          <span>{{ doc.nomFichier }}</span>
+          <div>
+            <button 
+              type="button" 
+              class="btn btn-outline-danger btn-sm me-2" 
+              (click)="previewDocument(doc.id)"
+            >
+              Aperçu
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-outline-primary btn-sm" 
+              (click)="downloadDocument(doc.id)"
+            >
+              Télécharger
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Aperçu du document -->
+  <div class="card mb-4" *ngIf="selectedDocumentUrl">
+    <div class="card-body">
+      <h5 class="card-title">Aperçu du Document</h5>
+      <iframe 
+        [src]="selectedDocumentUrl" 
+        width="100%" 
+        height="500" 
+        frameborder="0"
+        title="Aperçu du document"
+      ></iframe>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
