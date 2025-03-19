@@ -37,6 +37,7 @@ export class CandidatureDetailsComponent implements OnInit {
   loadCandidatureDetails(candidatureId: number): void {
     this.candidatureService.getCandidatureById(candidatureId).subscribe({
       next: (data) => {
+        console.log('Détails de la candidature reçus :', data);
         this.candidature = data;
         this.documents = data.documents || [];
       },
@@ -72,11 +73,12 @@ export class CandidatureDetailsComponent implements OnInit {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
-
+  
     this.candidatureService.updateCandidature(this.candidature.id, this.candidature).subscribe({
       next: (updatedCandidature) => {
-        this.candidature = updatedCandidature;
+        this.candidature = updatedCandidature; // Mettre à jour l'objet candidature local
         alert('Candidature mise à jour avec succès !');
+        this.loadCandidatureDetails(this.candidature.id); // Recharger les détails
       },
       error: (err) => {
         console.error('Erreur lors de la mise à jour de la candidature', err);

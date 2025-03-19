@@ -94,12 +94,13 @@ export class DashboardPerComponent implements OnInit {
         this.handleFragment();
       });
   }
-
+  
   // Charger les candidatures de l'utilisateur connecté
   loadCandidatures() {
     if (this.user && this.user.id) {
       this.candidatureService.getMesCandidatures(this.user.id).subscribe(
         (data) => {
+          console.log('Détails de la candidature reçus :', data);
           this.candidatures = data;
         },
         (error) => {

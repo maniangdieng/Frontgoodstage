@@ -114,6 +114,7 @@
             <th>Date de dépôt</th>
             <th>Destination</th>
             <th>Statut</th>
+            <th>Commentaire</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -122,6 +123,7 @@
             <td>{{ candidature.dateDepot | date: 'dd/MM/yyyy' }}</td>
             <td>{{ candidature.destination }}</td>
             <td>{{ candidature.statut }}</td>
+            <td>{{ candidature.commentaire }}</td>
             <td>
               <button class="btn btn-warning btn-sm me-2" (click)="modifierCandidature(candidature.id)">Modifier</button>
               <button class="btn btn-danger btn-sm" (click)="supprimerCandidature(candidature.id)">Supprimer</button>
