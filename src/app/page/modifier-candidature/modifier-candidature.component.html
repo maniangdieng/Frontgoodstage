@@ -85,6 +85,17 @@
           </div>
         </div>
 
+        <div class="mb-3">
+          <label for="documents" class="form-label">Ajouter ou remplacer des documents</label>
+          <input 
+            type="file" 
+            id="documents" 
+            class="form-control" 
+            (change)="onFileChange($event)"
+            multiple
+          >
+        </div>
+
         <button type="submit" class="btn btn-primary" [disabled]="candidatureForm.invalid">
           Enregistrer
         </button>
@@ -109,10 +120,17 @@
             </button>
             <button 
               type="button" 
-              class="btn btn-outline-primary btn-sm" 
+              class="btn btn-outline-primary btn-sm me-2" 
               (click)="downloadDocument(doc.id)"
             >
               Télécharger
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-outline-danger btn-sm" 
+              (click)="deleteDocument(doc.id)"
+            >
+              Supprimer
             </button>
           </div>
         </li>

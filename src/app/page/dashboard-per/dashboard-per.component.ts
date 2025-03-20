@@ -58,6 +58,7 @@ export class DashboardPerComponent implements OnInit {
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       destination: ['', Validators.required],
+      typeCandidature: [this.isEnseignantNouveau() ? 'nouveau' : 'ancien', Validators.required],
     });
   }
 

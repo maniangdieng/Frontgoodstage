@@ -68,24 +68,29 @@ export class CandidatureDetailsComponent implements OnInit {
   }
 
   // Mettre à jour la candidature
-  updateCandidature(): void {
-    if (!this.candidature.statut || !this.candidature.commentaire) {
-      alert('Veuillez remplir tous les champs obligatoires.');
-      return;
-    }
-  
-    this.candidatureService.updateCandidature(this.candidature.id, this.candidature).subscribe({
-      next: (updatedCandidature) => {
-        this.candidature = updatedCandidature; // Mettre à jour l'objet candidature local
-        alert('Candidature mise à jour avec succès !');
-        this.loadCandidatureDetails(this.candidature.id); // Recharger les détails
-      },
-      error: (err) => {
-        console.error('Erreur lors de la mise à jour de la candidature', err);
-        alert('Une erreur est survenue lors de la mise à jour.');
-      },
-    });
+  // Dans CandidatureDetailsComponent
+updateCandidature(): void {
+  if (!this.candidature.statut || !this.candidature.commentaire) {
+    alert('Veuillez remplir tous les champs obligatoires.');
+    return;
   }
+
+  // Créer un FormData pour correspondre au backend
+  const formData = new FormData();
+  formData.append('candidature', JSON.stringify(this.candidature)); // JSON stringifié
+
+  this.candidatureService.updateCandidature(this.candidature.id, formData).subscribe({
+    next: (updatedCandidature) => {
+      this.candidature = updatedCandidature; // Mettre à jour l'objet candidature local
+      alert('Candidature mise à jour avec succès !');
+      this.loadCandidatureDetails(this.candidature.id); // Recharger les détails
+    },
+    error: (err) => {
+      console.error('Erreur lors de la mise à jour de la candidature', err);
+      alert('Une erreur est survenue lors de la mise à jour.');
+    },
+  });
+}
 
   // Télécharger un document
   downloadDocument(documentId: number): void {
@@ -109,17 +114,20 @@ export class CandidatureDetailsComponent implements OnInit {
   previewDocument(documentId: number): void {
     const documentUrl = `http://localhost:8080/api/documents/${documentId}/preview`;
     this.selectedDocumentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(documentUrl);
-
-    // Vérifier si l'URL est valide
+  
     fetch(documentUrl)
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Fichier non trouvé');
+          if (response.status === 404) {
+            throw new Error('Document non trouvé.');
+          } else {
+            throw new Error(`Erreur HTTP : ${response.status} - ${response.statusText}`);
+          }
         }
       })
       .catch((error) => {
         console.error('Erreur lors du chargement du document', error);
-        alert('Impossible de charger l\'aperçu du document.');
+        alert(error.message); // Afficher un message d'erreur clair
       });
   }
 

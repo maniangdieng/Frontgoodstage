@@ -74,9 +74,7 @@
         <!-- Sélection de l'utilisateur -->
         <div class="mb-3">
           <label for="utilisateur" class="form-label">Utilisateur</label>
-          <select id="utilisateur" class="form-select" formControlName="personnelId" required>
-            <option *ngFor="let utilisateur of utilisateurs" [value]="utilisateur.id">{{ utilisateur.nom }} {{ utilisateur.prenom }}</option>
-          </select>
+          <input id="utilisateur" class="form-control" [value]="user.nom + ' ' + user.prenom" readonly>
         </div>
 
         <!-- Champs communs -->

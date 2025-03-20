@@ -38,9 +38,10 @@ export class CandidatureService {
     return this.http.post<any>(this.apiUrl, formData);
   }
 
-  // Mettre à jour une candidature existante
-  updateCandidature(id: number, candidature: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, candidature);
+ 
+   // Mettre à jour une candidature avec des fichiers
+   updateCandidature(id: number, formData: FormData): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, formData);
   }
 
   // Valider une candidature
@@ -57,6 +58,12 @@ export class CandidatureService {
   deleteCandidature(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  // Supprimer un document
+  deleteDocument(documentId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/documents/${documentId}`);
+  }
+
 
   // Télécharger un document
   downloadDocument(documentId: number): Observable<Blob> {

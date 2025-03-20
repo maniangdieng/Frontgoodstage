@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,13 +26,15 @@ export class ModifierCandidatureComponent implements OnInit {
   candidature: any;
   documents: any[] = [];
   selectedDocumentUrl: SafeResourceUrl | null = null;
+  selectedFiles: File[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private candidatureService: CandidatureService,
-    private fb: FormBuilder,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private location: Location,
+    private fb: FormBuilder
   ) {
     this.candidatureForm = this.fb.group({
       dateDebut: ['', Validators.required],
@@ -67,15 +70,24 @@ export class ModifierCandidatureComponent implements OnInit {
     });
   }
 
+  onFileChange(event: any): void {
+    this.selectedFiles = Array.from(event.target.files);
+  }
+
   previewDocument(documentId: number): void {
-    this.candidatureService.getDocumentUrl(documentId).subscribe({
-      next: (url) => {
-        this.selectedDocumentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la prévisualisation du document:', error);
-      }
-    });
+    const documentUrl = `http://localhost:8080/api/documents/${documentId}/preview`;
+    this.selectedDocumentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(documentUrl);
+
+    fetch(documentUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Fichier non trouvé');
+        }
+      })
+      .catch((error) => {
+        console.error('Erreur lors du chargement du document', error);
+        alert('Impossible de charger l\'aperçu du document.');
+      });
   }
 
   downloadDocument(documentId: number): void {
@@ -94,13 +106,37 @@ export class ModifierCandidatureComponent implements OnInit {
     });
   }
 
+  deleteDocument(documentId: number): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
+      this.candidatureService.deleteDocument(documentId).subscribe({
+        next: () => {
+          this.documents = this.documents.filter(doc => doc.id !== documentId);
+          alert('Document supprimé avec succès !');
+        },
+        error: (error) => {
+          console.error('Erreur lors de la suppression du document:', error);
+        }
+      });
+    }
+  }
+
   onSubmit(): void {
     if (this.candidatureForm.valid) {
       const updatedCandidature = {
         ...this.candidature,
         ...this.candidatureForm.value
       };
-      this.candidatureService.updateCandidature(this.candidatureId, updatedCandidature).subscribe({
+  
+      const formData = new FormData();
+      formData.append('candidature', JSON.stringify(updatedCandidature));
+  
+      // Ajouter les fichiers avec les bonnes clés
+      this.selectedFiles.forEach((file, index) => {
+        const fileKey = index === 0 ? 'arreteTitularisation' : 'justificatifPrecedentVoyage'; // Exemple simple
+        formData.append(fileKey, file, file.name);
+      });
+  
+      this.candidatureService.updateCandidature(this.candidatureId, formData).subscribe({
         next: () => {
           alert('Candidature mise à jour avec succès !');
           this.goBack();
@@ -115,6 +151,6 @@ export class ModifierCandidatureComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/candidatures']);
+    this.location.back();
   }
 }
