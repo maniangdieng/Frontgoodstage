@@ -73,6 +73,43 @@
             <div id="arretIndividuel" class="content-section">
                 <h3>Établir un Arrêté Individuel</h3>
                 <p>Interface pour établir un arrêté individuel pour un candidat.</p>
+                <!-- Tableau des candidatures sélectionnées -->
+<table class="table">
+    <thead>
+      <tr>
+        <th>Date Dépôt</th>
+        <th>Statut</th>
+        <th>Date Début</th>
+        <th>Date Fin</th>
+        <th>Destination</th>
+        <th>Cohorte</th>
+        <th>PER</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let candidature of candidatures">
+        <td>{{ candidature.dateDepot | date }}</td>
+        <td>{{ candidature.statut }}</td>
+        <td>{{ candidature.dateDebut | date }}</td>
+        <td>{{ candidature.dateFin | date }}</td>
+        <td>{{ candidature.destination }}</td>
+        <td>{{ candidature.cohorteAnnee }}</td>
+        <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+        <td>
+            <!-- Bouton Établir Arrêté (affiché uniquement si l'arrêté n'existe pas) -->
+            <button *ngIf="!candidature.arreteExiste" class="btn btn-primary btn-sm me-2" (click)="etablirArrete(candidature)">
+              Établir Arrêté
+            </button>
+          
+            <!-- Bouton Voir (affiché uniquement si l'arrêté existe) -->
+            <button *ngIf="candidature.arreteExiste" class="btn btn-success btn-sm" (click)="voirArrete(candidature)">
+              Voir
+            </button>
+          </td>
+      </tr>
+    </tbody>
+  </table>
             </div>
 
             <div id="arretCollectif" class="content-section">

@@ -23,6 +23,12 @@
               <span>Gestion des Candidatures</span>
             </a>
           </li>
+          <li>
+            <a [routerLink]="[]" fragment="voirArretes" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-file-earmark-pdf me-2"></i>
+              <span>Voir les Arrêtés</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -141,6 +147,49 @@
           </tbody>
         </table>
       </div>
+      <div class="col py-3" id="content-area">
+        <!-- Section pour voir les arrêtés -->
+        <div id="voirArretes" class="content-section">
+          <h3>Voir les Arrêtés</h3>
+          <p>Interface pour consulter les arrêtés déjà établis.</p>
+      
+          <!-- Tableau des arrêtés -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date Dépôt</th>
+                <th>Statut</th>
+                <th>Date Début</th>
+                <th>Date Fin</th>
+                <th>Destination</th>
+                <th>Cohorte</th>
+                <th>PER</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let candidature of candidatures">
+                <td>{{ candidature.dateDepot | date }}</td>
+                <td>{{ candidature.statut }}</td>
+                <td>{{ candidature.dateDebut | date }}</td>
+                <td>{{ candidature.dateFin | date }}</td>
+                <td>{{ candidature.destination }}</td>
+                <td>{{ candidature.cohorteAnnee }}</td>
+                <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+                <td>
+                  <button  class="btn btn-success btn-sm" (click)="voirArrete(candidature)">
+                    Voir
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      
+      </div>
     </div>
   </div>
+
+
+  
 </div>

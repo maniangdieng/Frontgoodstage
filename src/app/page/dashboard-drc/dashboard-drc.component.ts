@@ -7,6 +7,18 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HeaderComponent } from 'src/app/constantes/header/header.component';
 import { CohorteService } from '../../services/cohorte.service';
 import { CandidatureService } from '../../services/candidature.service';
+interface Candidature {
+  id: number;
+  dateDepot: string;
+  statut: string;
+  dateDebut: string;
+  dateFin: string;
+  destination: string;
+  cohorteAnnee: string;
+  personnelNom: string;
+  personnelPrenom: string;
+  arreteExiste: boolean;
+}
 
 @Component({
   standalone: true,
@@ -96,6 +108,40 @@ export class DashboardDrcComponent implements OnInit {
     return null;
   }
 
+  // Charger les candidatures avec le statut "VALIDE"
+ loadCandidaturesValides(): void {
+  this.candidatureService.getCandidaturesByStatut('VALIDE').subscribe(
+    (data) => {
+      this.candidatures = Array.isArray(data) ? data : [];
+      // Vérifier si un arrêté existe pour chaque candidature
+      this.candidatures.forEach(candidature => {
+        this.candidatureService.checkArreteExiste(candidature.id).subscribe(
+          (arreteExiste) => {
+            candidature.arreteExiste = arreteExiste;
+          }
+        );
+      });
+    },
+    (error) => {
+      console.error('Erreur lors de la récupération des candidatures', error);
+    }
+  );
+}
+
+etablirArrete(candidature: Candidature): void {
+  this.candidatureService.etablirArrete(candidature.id).subscribe(
+    (response) => {
+      console.log(response); // Afficher la réponse du serveur
+      alert('Arrêté établi avec succès !');
+      this.loadCandidaturesValides(); // Recharger les candidatures
+    },
+    (error) => {
+      console.error('Erreur lors de l\'établissement de l\'arrêté', error);
+      alert('Erreur lors de l\'établissement de l\'arrêté : ' + error.message);
+    }
+  );
+}
+
   // Soumettre le formulaire des cohortes
   onSubmit(): void {
     if (this.cohorteForm.valid) {
@@ -167,4 +213,18 @@ export class DashboardDrcComponent implements OnInit {
     this.isEditMode = false;
     this.selectedCohorteId = null;
   }
+  voirArrete(candidature: Candidature): void {
+    this.candidatureService.downloadArrete(candidature.id).subscribe(
+      (response) => {
+        // Ouvrir le PDF dans un nouvel onglet
+        const fileURL = URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
+        window.open(fileURL, '_blank');
+      },
+      (error) => {
+        console.error('Erreur lors du téléchargement de l\'arrêté', error);
+        alert('Erreur lors de l\'ouverture de l\'arrêté');
+      }
+    );
+  }
+
 }

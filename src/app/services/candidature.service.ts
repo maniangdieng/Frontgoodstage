@@ -92,4 +92,21 @@ export class CandidatureService {
       })
     );
   }
+
+
+  // Établir un arrêté pour un candidat
+  etablirArrete(candidatureId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${candidatureId}/etablir-arrete`, {});
+  }
+
+  // Vérifier si un arrêté existe pour un candidat
+  checkArreteExiste(candidatureId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/${candidatureId}/arrete-existe`);
+  }
+
+  // Télécharger l'arrêté
+  downloadArrete(candidatureId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${candidatureId}/download-arrete`, { responseType: 'blob' });
+  }
+
 }
