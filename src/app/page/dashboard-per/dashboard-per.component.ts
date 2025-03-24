@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // Importer FormsModule pour ngModel
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { CandidatureService } from '../../services/candidature.service';
-
-// Assurez-vous que HeaderComponent et FooterComponent sont standalone avant de les importer ici
 import { HeaderComponent } from '../../constantes/header/header.component';
 import { FooterComponent } from '../../constantes/footer/footer.component';
 
@@ -27,34 +26,49 @@ interface Utilisateur {
   role: string;
 }
 
+interface Candidature {
+  id: number;
+  dateDepot: string;
+  dateDebut: string;
+  dateFin: string;
+  destination: string;
+  statut: string; // EN_ATTENTE, VALIDÉ, REFUSÉ
+  commentaire: string;
+  cohorteId: number;
+  voyageEtude?: {
+    statut: string; // EN_ATTENTE, EN_COURS, TERMINÉ
+  };
+}
+
 @Component({
   selector: 'app-dashboard-per',
   standalone: true,
   templateUrl: './dashboard-per.component.html',
   styleUrls: ['./dashboard-per.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent, RouterLink, FormsModule], // Ajouter FormsModule ici
 })
 export class DashboardPerComponent implements OnInit {
   candidatureForm: FormGroup;
   selectedFiles: { [key: string]: File } = {};
-  cohortes: Cohorte[] = []; // Liste des cohortes disponibles
-  utilisateurs: Utilisateur[] = []; // Liste de tous les utilisateurs
-  errorMessage: string | null = null; // Pour afficher les messages d'erreur
+  cohortes: Cohorte[] = [];
+  utilisateurs: Utilisateur[] = [];
+  errorMessage: string | null = null;
   user: any;
-  candidatures: any[] = [];
+  candidatures: Candidature[] = [];
+  candidaturesVoyagesEnCours: Candidature[] = [];
+  selectedCandidatureId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
     private candidatureService: CandidatureService,
-    private authService: AuthService // Injection du service d'authentification
+    private authService: AuthService
   ) {
-    // Initialisation du formulaire réactif
     this.candidatureForm = this.fb.group({
       cohorteId: ['', Validators.required],
-      personnelId: [this.authService.getUser()?.id, Validators.required], // Utiliser l'ID de l'utilisateur connecté
-      dateDepot: [''], // La date de dépôt sera automatiquement définie
+      personnelId: [this.authService.getUser()?.id, Validators.required],
+      dateDepot: [''],
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       destination: ['', Validators.required],
@@ -63,197 +77,143 @@ export class DashboardPerComponent implements OnInit {
   }
 
   ngOnInit() {
-
-      // Vérifier si l'utilisateur est authentifié
     if (!this.authService.isAuthenticated()) {
-      this.authService.logout(); // Rediriger vers la page de connexion
+      this.authService.logout();
       return;
     }
 
-      // Récupérer l'utilisateur connecté
     this.user = this.authService.getUser();
     console.log('Utilisateur connecté :', this.user);
 
-
-    // Charger les données nécessaires
     this.handleFragment();
-    this.loadCohortes(); // Charger les cohortes au démarrage
-    this.loadUtilisateurs(); // Charger tous les utilisateurs au démarrage
-    this.loadCandidatures(); // Charger les candidatures de l'utilisateur connecté
+    this.loadCohortes();
+    this.loadUtilisateurs();
+    this.loadCandidatures();
 
-    // Charger la cohorte en cours (année en cours)
     const currentYear = new Date().getFullYear();
     this.loadCurrentCohorte(currentYear);
 
-    // Afficher les informations de l'utilisateur dans la console pour le débogage
-    console.log('Utilisateur connecté :', this.user);
-
-    // Écoute des changements d'URL pour détecter les fragments dynamiquement
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.handleFragment();
-      });
+      .subscribe(() => this.handleFragment());
   }
-  
-  // Charger les candidatures de l'utilisateur connecté
+
   loadCandidatures() {
     if (this.user && this.user.id) {
       this.candidatureService.getMesCandidatures(this.user.id).subscribe(
-        (data) => {
-          console.log('Détails de la candidature reçus :', data);
+        (data: Candidature[]) => {
+          console.log('Détails des candidatures reçus :', data);
           this.candidatures = data;
+          this.candidaturesVoyagesEnCours = data.filter(c => c.voyageEtude && c.voyageEtude.statut === 'EN_COURS');
         },
-        (error) => {
-          console.error('Erreur lors de la récupération des candidatures', error);
-        }
+        (error) => console.error('Erreur lors de la récupération des candidatures', error)
       );
     } else {
       console.error('Utilisateur non connecté ou ID non disponible');
     }
   }
-// Dans DashboardPerComponent
-isCohorteCloturee(cohorteId: number): boolean {
-  const cohorte = this.cohortes.find(c => c.id === cohorteId);
-  if (!cohorte) return true; // Si la cohorte n'est pas trouvée, considérez-la comme clôturée
 
-  const dateCloture = new Date(cohorte.dateClotureDef);
-  const aujourdHui = new Date();
-  return aujourdHui > dateCloture;
-}
-  // Supprimer une candidature
+  isCohorteCloturee(cohorteId: number): boolean {
+    const cohorte = this.cohortes.find(c => c.id === cohorteId);
+    if (!cohorte) return true;
+    const dateCloture = new Date(cohorte.dateClotureDef);
+    const aujourdHui = new Date();
+    return aujourdHui > dateCloture;
+  }
+
   supprimerCandidature(id: number) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
       this.candidatureService.deleteCandidature(id).subscribe(
-        () => {
-          this.loadCandidatures(); // Recharger la liste après suppression
-        },
-        (error) => {
-          console.error('Erreur lors de la suppression de la candidature', error);
-        }
+        () => this.loadCandidatures(),
+        (error) => console.error('Erreur lors de la suppression', error)
       );
     }
   }
 
-  // Dans DashboardPerComponent
-modifierCandidature(id: number) {
-  const candidature = this.candidatures.find(c => c.id === id);
-  if (!candidature) {
-    console.error('Candidature non trouvée');
-    return;
+  modifierCandidature(id: number) {
+    const candidature = this.candidatures.find(c => c.id === id);
+    if (!candidature) {
+      console.error('Candidature non trouvée');
+      return;
+    }
+    if (this.isCohorteCloturee(candidature.cohorteId)) {
+      alert('La date de clôture de la cohorte est passée.');
+      return;
+    }
+    this.router.navigate(['/modifier-candidature', id]);
   }
 
-  if (this.isCohorteCloturee(candidature.cohorteId)) {
-    alert('La date de clôture de la cohorte est passée. Vous ne pouvez plus modifier cette candidature.');
-    return;
-  }
-
-  this.router.navigate(['/modifier-candidature', id]);
-}
-  // Charger les cohortes depuis le back-end
   loadCohortes() {
     this.http.get<Cohorte[]>('http://localhost:8080/api/cohortes').subscribe(
-      (data) => {
-        this.cohortes = data;
-      },
-      (error) => {
-        console.error('Erreur lors du chargement des cohortes :', error);
-      }
+      (data) => this.cohortes = data,
+      (error) => console.error('Erreur lors du chargement des cohortes :', error)
     );
   }
 
-  // Charger tous les utilisateurs depuis le back-end
   loadUtilisateurs() {
     this.http.get<Utilisateur[]>('http://localhost:8080/api/utilisateurs').subscribe(
-      (data) => {
-        this.utilisateurs = data;
-      },
-      (error) => {
-        console.error('Erreur lors du chargement des utilisateurs :', error);
-      }
+      (data) => this.utilisateurs = data,
+      (error) => console.error('Erreur lors du chargement des utilisateurs :', error)
     );
   }
 
-  // Charger la cohorte en cours
   loadCurrentCohorte(annee: number) {
     this.http.get<Cohorte[]>(`http://localhost:8080/api/cohortes?annee=${annee}`).subscribe(
       (data) => {
         if (data.length > 0) {
-          this.candidatureForm.get('cohorteId')?.setValue(data[0].id); // Sélectionner la cohorte en cours
+          this.candidatureForm.get('cohorteId')?.setValue(data[0].id);
         } else {
           console.warn(`Aucune cohorte trouvée pour l'année ${annee}.`);
         }
       },
-      (error) => {
-        console.error('Erreur lors du chargement de la cohorte en cours :', error);
-      }
+      (error) => console.error('Erreur lors du chargement de la cohorte en cours :', error)
     );
   }
 
-  // Gestion du fragment pour afficher la bonne section
   handleFragment() {
     const fragment = this.router.parseUrl(this.router.url).fragment;
     const allSections = document.querySelectorAll('.content-section');
-
-    // Masquer toutes les sections par défaut
-    allSections.forEach((section) => {
-      (section as HTMLElement).style.display = 'none';
-    });
-
-    // Afficher la section correspondant au fragment
+    allSections.forEach((section) => (section as HTMLElement).style.display = 'none');
     if (fragment) {
       const targetSection = document.getElementById(fragment);
-      if (targetSection) {
-        targetSection.style.display = 'block';
-      }
+      if (targetSection) targetSection.style.display = 'block';
     }
   }
 
-  // Gestion de la sélection des fichiers
   onFileChange(event: any, fieldName: string) {
     if (event.target.files.length > 0) {
-      const file = event.target.files[0];
-      this.selectedFiles[fieldName] = file;
+      this.selectedFiles[fieldName] = event.target.files[0];
     }
   }
 
-  // Soumission du formulaire
   onSubmit() {
-    this.errorMessage = null; // Réinitialiser le message d'erreur
-  
+    this.errorMessage = null;
+
     if (this.candidatureForm.invalid) {
       this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
       return;
     }
-  
-    // Définir la date de dépôt automatiquement
-    const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+    const today = new Date().toISOString().split('T')[0];
     this.candidatureForm.get('dateDepot')?.setValue(today);
-  
-    // Récupérer la cohorte sélectionnée
+
     const selectedCohorteId = this.candidatureForm.get('cohorteId')?.value;
     const selectedCohorte = this.cohortes.find((c) => c.id === selectedCohorteId);
-  
+
     if (!selectedCohorte) {
       this.errorMessage = 'Veuillez sélectionner une cohorte valide.';
       return;
     }
-  
-    // Vérifier que la date de dépôt est dans la période de la cohorte
+
     const dateDepot = new Date(this.candidatureForm.get('dateDepot')?.value);
     const dateOuverture = new Date(selectedCohorte.dateOuverture);
     const dateClotureDef = new Date(selectedCohorte.dateClotureDef);
-  
-    if (dateDepot < dateOuverture) {
-      this.errorMessage = 'La date de dépôt est antérieure à la date d\'ouverture de la cohorte.';
+
+    if (dateDepot < dateOuverture || dateDepot > dateClotureDef) {
+      this.errorMessage = 'La date de dépôt est hors de la période de la cohorte.';
       return;
     }
-    if (dateDepot > dateClotureDef) {
-      this.errorMessage = 'La date de dépôt est postérieure à la date de clôture définitive de la cohorte.';
-      return;
-    }
-  
-    // Vérifier les documents requis en fonction du statut de l'enseignant
+
     if (this.isEnseignantNouveau() && !this.selectedFiles['arreteTitularisation']) {
       this.errorMessage = 'Un arrêté de titularisation est requis pour les nouveaux enseignants.';
       return;
@@ -262,63 +222,89 @@ modifierCandidature(id: number) {
       this.errorMessage = 'Un justificatif du précédent voyage est requis pour les anciens enseignants.';
       return;
     }
-  
-    // Créer un objet JSON avec les données du formulaire
+
     const candidatureData = {
       cohorteId: selectedCohorteId,
-      personnelId: this.user.id, // Utiliser l'ID de l'utilisateur connecté
+      personnelId: this.user.id,
       dateDepot: today,
       dateDebut: this.candidatureForm.get('dateDebut')?.value,
       dateFin: this.candidatureForm.get('dateFin')?.value,
       destination: this.candidatureForm.get('destination')?.value,
     };
-  
-    // Convertir le formulaire en JSON
+
     const candidatureJson = JSON.stringify(candidatureData);
-    console.log('JSON envoyé :', candidatureJson); // Afficher le JSON dans la console
-  
-    // Créer un objet FormData pour envoyer les fichiers
+    console.log('JSON envoyé :', candidatureJson);
+
     const formData = new FormData();
     formData.append('candidature', new Blob([candidatureJson], { type: 'application/json' }));
-  
-    // Ajouter les fichiers avec les clés attendues par le backend
     if (this.isEnseignantNouveau() && this.selectedFiles['arreteTitularisation']) {
       formData.append('arreteTitularisation', this.selectedFiles['arreteTitularisation']);
     }
     if (this.isEnseignantAncien() && this.selectedFiles['justificatifPrecedentVoyage']) {
       formData.append('justificatifPrecedentVoyage', this.selectedFiles['justificatifPrecedentVoyage']);
     }
-  
-    // Envoi des données au back-end
-    this.http.post('http://localhost:8080/api/candidatures', formData, {
-      headers: { 'Accept': 'application/json' }
-    }).subscribe(
+
+    this.http.post('http://localhost:8080/api/candidatures', formData, { headers: { 'Accept': 'application/json' } }).subscribe(
       (response) => {
         alert('Candidature soumise avec succès !');
         this.router.navigate(['/suivi-candidatures']);
+        this.loadCandidatures();
       },
       (error) => {
         console.error('Erreur lors de la soumission :', error);
-        if (error.error) {
-          this.errorMessage = error.error; // Afficher le message d'erreur
-        } else {
-          this.errorMessage = 'Une erreur s\'est produite lors de la soumission de la candidature.';
-        }
+        this.errorMessage = error.error || 'Une erreur s’est produite lors de la soumission.';
       }
     );
   }
+
+  onCandidatureChange(event: Event) { // Ajouter un paramètre typé Event
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedCandidatureId = selectElement.value ? Number(selectElement.value) : null;
+    this.selectedFiles = {};
+  }
+
+  onSubmitRapportVoyage() {
+    if (!this.selectedCandidatureId) {
+      this.errorMessage = 'Veuillez sélectionner une candidature.';
+      return;
+    }
+
+    if (!this.selectedFiles['carteEmbarquement'] || !this.selectedFiles['rapportVoyage']) {
+      this.errorMessage = 'La carte d’embarquement et le rapport du voyage sont requis.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('candidatureId', this.selectedCandidatureId.toString());
+    formData.append('carteEmbarquement', this.selectedFiles['carteEmbarquement']);
+    if (this.selectedFiles['justificatifDestination']) {
+      formData.append('justificatifDestination', this.selectedFiles['justificatifDestination']);
+    }
+    formData.append('rapportVoyage', this.selectedFiles['rapportVoyage']);
+
+    this.http.post('http://localhost:8080/api/candidatures/rapport-voyage', formData).subscribe(
+      (response) => {
+        alert('Justificatifs et rapport soumis avec succès !');
+        this.selectedCandidatureId = null;
+        this.selectedFiles = {};
+        this.loadCandidatures();
+      },
+      (error) => {
+        console.error('Erreur lors de la soumission du rapport :', error);
+        this.errorMessage = error.error || 'Une erreur s’est produite lors de la soumission.';
+      }
+    );
+  }
+
   logout() {
     this.authService.logout();
   }
-// Méthode pour vérifier si l'enseignant est nouveau
-isEnseignantNouveau(): boolean {
-  // Supposons que vous avez une méthode dans le backend pour vérifier si l'enseignant a déjà effectué un voyage
-  // Ici, nous simulons cette vérification en utilisant une propriété de l'utilisateur connecté
-  return !this.user?.hasVoyageValide; // Si l'utilisateur n'a pas de voyage validé, il est nouveau
-}
 
-// Méthode pour vérifier si l'enseignant est ancien
-isEnseignantAncien(): boolean {
-  return !this.isEnseignantNouveau(); // Si l'utilisateur a déjà effectué un voyage, il est ancien
-}
+  isEnseignantNouveau(): boolean {
+    return !this.candidatures.some(c => c.voyageEtude && c.voyageEtude.statut === 'TERMINÉ');
+  }
+
+  isEnseignantAncien(): boolean {
+    return !this.isEnseignantNouveau();
+  }
 }

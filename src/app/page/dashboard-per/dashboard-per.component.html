@@ -17,7 +17,12 @@
               <span class="text-nowrap">Déposer Candidature</span>
             </a>
           </li>
-          
+          <li>
+            <a [routerLink]="[]" fragment="subvention" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-cash-coin me-2"></i>
+              <span class="text-nowrap">Demander Subvention</span>
+            </a>
+          </li>
           <li>
             <a [routerLink]="[]" fragment="cohorte" class="nav-link px-0 align-middle d-flex align-items-center text-white">
               <i class="fs-4 bi bi-arrow-repeat me-2"></i>
@@ -36,7 +41,18 @@
               <span class="text-nowrap">Suivi de mes candidatures</span>
             </a>
           </li>
-          
+          <li>
+            <a [routerLink]="[]" fragment="suiviSubventions" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-credit-card-2-front me-2"></i>
+              <span class="text-nowrap">Suivi des subventions</span>
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="[]" fragment="rapportVoyage" class="nav-link px-0 align-middle d-flex align-items-center text-white">
+              <i class="fs-4 bi bi-journal-text me-2"></i>
+              <span class="text-nowrap">Déposer Rapport Voyage</span>
+            </a>
+          </li>
           <li>
             <button class="btn btn-danger" (click)="logout()">Déconnexion</button>
           </li>
@@ -51,8 +67,6 @@
         {{ errorMessage }}
       </div>
       <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
-       
-
         <!-- Sélection de la cohorte -->
         <div class="mb-3">
           <label for="cohorte" class="form-label">Cohorte</label>
@@ -89,8 +103,6 @@
             <label for="arreteTitularisation" class="form-label">Arrêté de titularisation</label>
             <input type="file" id="arreteTitularisation" class="form-control" (change)="onFileChange($event, 'arreteTitularisation')">
           </div>
-
-        
         </div>
 
         <!-- Champs spécifiques pour Ancien Enseignant -->
@@ -99,23 +111,22 @@
             <label for="justificatifPrecedentVoyage" class="form-label">Justificatif du précédent voyage</label>
             <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
           </div>
-
-          
         </div>
 
         <!-- Bouton de soumission -->
         <button type="submit" class="btn btn-primary">Soumettre</button>
       </form>
     </div>
+
     <div id="suiviCandidatures" class="content-section">
       <h3>Suivi de mes candidatures</h3>
       <table class="table">
         <thead>
           <tr>
-            
             <th>Date de dépôt</th>
             <th>Destination</th>
-            <th>Statut</th>
+            <th>Statut Candidature</th>
+            <th>Statut Voyage</th>
             <th>Commentaire</th>
             <th>Actions</th>
           </tr>
@@ -125,14 +136,53 @@
             <td>{{ candidature.dateDepot | date: 'dd/MM/yyyy' }}</td>
             <td>{{ candidature.destination }}</td>
             <td>{{ candidature.statut }}</td>
+            <td>{{ candidature.voyageEtude ? candidature.voyageEtude.statut : 'N/A' }}</td>
             <td>{{ candidature.commentaire }}</td>
             <td>
-              <button class="btn btn-warning btn-sm me-2" (click)="modifierCandidature(candidature.id)">Modifier</button>
-              <button class="btn btn-danger btn-sm" (click)="supprimerCandidature(candidature.id)">Supprimer</button>
+              <button class="btn btn-warning btn-sm me-2" (click)="modifierCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE' || isCohorteCloturee(candidature.cohorteId)">Modifier</button>
+              <button class="btn btn-danger btn-sm" (click)="supprimerCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE'">Supprimer</button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div id="rapportVoyage" class="content-section">
+      <h3>Déposer les justificatifs et le rapport du voyage</h3>
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Sélectionner une candidature avec voyage en cours -->
+      <div class="mb-3">
+        <label for="candidatureVoyage" class="form-label">Sélectionner un voyage en cours</label>
+        <select id="candidatureVoyage" class="form-select" [(ngModel)]="selectedCandidatureId" (change)="onCandidatureChange($event)">
+          <option value="">-- Sélectionner une candidature --</option>
+          <option *ngFor="let candidature of candidaturesVoyagesEnCours" [value]="candidature.id">
+            {{ candidature.destination }} - {{ candidature.dateDebut | date: 'dd/MM/yyyy' }} au {{ candidature.dateFin | date: 'dd/MM/yyyy' }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Formulaire pour dépôt des justificatifs -->
+      <form *ngIf="selectedCandidatureId" (ngSubmit)="onSubmitRapportVoyage()" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="carteEmbarquement" class="form-label">Carte d’embarquement</label>
+          <input type="file" id="carteEmbarquement" class="form-control" (change)="onFileChange($event, 'carteEmbarquement')">
+        </div>
+
+        <div class="mb-3">
+          <label for="justificatifDestination" class="form-label">Justificatif de destination (optionnel)</label>
+          <input type="file" id="justificatifDestination" class="form-control" (change)="onFileChange($event, 'justificatifDestination')">
+        </div>
+
+        <div class="mb-3">
+          <label for="rapportVoyage" class="form-label">Rapport du voyage</label>
+          <input type="file" id="rapportVoyage" class="form-control" (change)="onFileChange($event, 'rapportVoyage')">
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="!selectedFiles['carteEmbarquement'] || !selectedFiles['rapportVoyage']">Soumettre</button>
+      </form>
     </div>
   </div>
 </div>
