@@ -109,4 +109,20 @@ export class CandidatureService {
     return this.http.get(`${this.apiUrl}/${candidatureId}/download-arrete`, { responseType: 'blob' });
   }
 
+ // Nouvelle méthode pour établir un arrêté collectif
+ etablirArreteCollectif(candidatureIds: number[]): Observable<Blob> {
+  return this.http.post(`${this.apiUrl}/etablir-arrete-collectif`, candidatureIds, {
+    responseType: 'blob'
+  });
+}
+
+// Nouvelle méthode pour récupérer les candidatures éligibles
+getCandidaturesPourArreteCollectif(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/candidatures-pour-arrete-collectif`);
+}
+
+getCandidaturesValidesSansArrete(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/candidatures-valides-sans-arrete`);
+}
+
 }

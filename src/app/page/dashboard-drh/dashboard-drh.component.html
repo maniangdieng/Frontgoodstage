@@ -114,7 +114,45 @@
 
             <div id="arretCollectif" class="content-section">
                 <h3>Établir un Arrêté Collectif</h3>
-                <p>Interface pour établir un arrêté collectif pour plusieurs candidats.</p>
+                <p>Sélectionnez les candidatures valides sans arrêté pour générer un arrêté collectif.</p>
+            
+                <div class="mb-3">
+                    <button class="btn btn-primary" (click)="etablirArreteCollectif()" 
+                            [disabled]="selectedCandidatures.length === 0">
+                        Générer l'arrêté collectif ({{selectedCandidatures.length}} sélectionnées)
+                    </button>
+                </div>
+            
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Sélection</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Destination</th>
+                                <th>Date Début</th>
+                                <th>Date Fin</th>
+                                <th>Cohorte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let candidature of candidatures">
+                                <td>
+                                    <input type="checkbox" [(ngModel)]="candidature.selected" 
+                                           (change)="toggleSelection(candidature)"
+                                           [disabled]="candidature.arreteExiste">
+                                </td>
+                                <td>{{ candidature.personnelNom }}</td>
+                                <td>{{ candidature.personnelPrenom }}</td>
+                                <td>{{ candidature.destination }}</td>
+                                <td>{{ candidature.dateDebut | date:'dd/MM/yyyy' }}</td>
+                                <td>{{ candidature.dateFin | date:'dd/MM/yyyy' }}</td>
+                                <td>{{ candidature.cohorteAnnee }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

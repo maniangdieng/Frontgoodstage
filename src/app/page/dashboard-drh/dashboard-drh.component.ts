@@ -5,6 +5,7 @@ import { FooterComponent } from 'src/app/constantes/footer/footer.component';
 import { HeaderComponent } from 'src/app/constantes/header/header.component';
 import { CandidatureService } from '../../services/candidature.service';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 
 // Définir une interface pour les candidatures
@@ -19,17 +20,21 @@ interface Candidature {
   personnelNom: string;
   personnelPrenom: string;
   arreteExiste: boolean;
+  selected?: boolean; // Changé de selectedForCollectif à selected
 }
 
 @Component({
   standalone: true,
   selector: 'app-dashboard-drh',
-  imports: [CommonModule, RouterModule, FooterComponent, HeaderComponent],
+  imports: [CommonModule, RouterModule, FooterComponent, HeaderComponent,FormsModule // Ajoutez cette ligne
+  ],
   templateUrl: './dashboard-drh.component.html',
   styleUrls: ['./dashboard-drh.component.css']
 })
 export class DashboardDrhComponent implements OnInit {
   candidatures: Candidature[] = []; // Utilisation de l'interface Candidature
+  selectedCandidatures: any[] = [];
+  showCollectifSection = false; 
 
   constructor(private router: Router, private candidatureService: CandidatureService) {}
 
@@ -110,4 +115,64 @@ voirArrete(candidature: Candidature): void {
     }
   );
 }
+
+
+// Ajoutez cette nouvelle méthode
+loadCandidaturesPourArreteCollectif(): void {
+  this.candidatureService.getCandidaturesValidesSansArrete().subscribe(
+    (data: Candidature[]) => {
+      this.candidatures = data.map(c => ({
+        ...c,
+        selected: false
+      }));
+    },
+    (error) => {
+      console.error('Erreur lors du chargement des candidatures', error);
+    }
+  );
+}
+
+checkArretesExistants(): void {
+  this.candidatures.forEach(candidature => {
+    this.candidatureService.checkArreteExiste(candidature.id).subscribe(
+      (exists) => {
+        candidature.arreteExiste = exists;
+      }
+    );
+  });
+}
+
+toggleSelection(candidature: any): void {
+  candidature.selected = !candidature.selected;
+  this.updateSelectedCandidatures();
+}
+
+updateSelectedCandidatures(): void {
+  this.selectedCandidatures = this.candidatures.filter(c => c.selected);
+}
+
+etablirArreteCollectif(): void {
+  const selectedIds = this.selectedCandidatures.map(c => c.id);
+  
+  if (selectedIds.length === 0) {
+    alert('Veuillez sélectionner au moins une candidature');
+    return;
+  }
+
+  this.candidatureService.etablirArreteCollectif(selectedIds).subscribe(
+    (pdfBlob) => {
+      // Ouvrir le PDF dans un nouvel onglet
+      const fileURL = URL.createObjectURL(pdfBlob);
+      window.open(fileURL, '_blank');
+      
+      // Recharger les données
+      this.loadCandidaturesValides();
+    },
+    (error) => {
+      console.error('Erreur lors de la génération de l\'arrêté collectif', error);
+      alert('Erreur lors de la génération de l\'arrêté collectif');
+    }
+  );
+}
+
 }
