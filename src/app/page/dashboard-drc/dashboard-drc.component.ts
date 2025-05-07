@@ -160,6 +160,17 @@ etablirArrete(candidature: Candidature): void {
               alert('Cohorte mise à jour avec succès !');
               this.loadCohortes();
               this.resetForm();
+              // Fermer la modale
+              const modal = document.getElementById('cohorteModal');
+              if (modal) {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                  backdrop.remove();
+                }
+              }
             },
             (error) => {
               alert('Erreur : ' + error.error);
@@ -171,6 +182,17 @@ etablirArrete(candidature: Candidature): void {
               alert('Cohorte créée avec succès !');
               this.loadCohortes();
               this.resetForm();
+              // Fermer la modale
+              const modal = document.getElementById('cohorteModal');
+              if (modal) {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                  backdrop.remove();
+                }
+              }
             },
             (error) => {
               alert('Erreur : ' + error.error);

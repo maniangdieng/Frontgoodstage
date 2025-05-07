@@ -118,9 +118,13 @@
             <td>{{ candidature.statut }}</td>
             <td>{{ candidature.voyageEtude ? candidature.voyageEtude.statut : 'N/A' }}</td>
             <td>{{ candidature.commentaire }}</td>
-            <td>
-              <button class="btn btn-warning btn-sm me-2" (click)="modifierCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE' || isCohorteCloturee(candidature.cohorteId)">Modifier</button>
-              <button class="btn btn-danger btn-sm" (click)="supprimerCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE'">Supprimer</button>
+            <td class="action-buttons">
+              <button class="btn btn-icon btn-warning me-1" (click)="modifierCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE' || isCohorteCloturee(candidature.cohorteId)" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" (click)="supprimerCandidature(candidature.id)" [disabled]="candidature.statut !== 'EN_ATTENTE'" title="Supprimer">
+                <i class="bi bi-trash"></i>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -167,4 +171,3 @@
   </div>
 </div>
 
-<app-footer></app-footer>

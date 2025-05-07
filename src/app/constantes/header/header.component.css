@@ -1,6 +1,20 @@
+:root {
+    --primary-dark: #1a3a2f;
+    --primary-medium: #3a7d5f;
+    --primary-light: #8fd3c1;
+    --accent: #4db6ac;
+    --white: #ffffff;
+    --off-white: #f9f9f9;
+    --gray: #666666;
+    --light-gray: #f5f5f5;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+  }
+
+
 .header {
     width: 100%;
-    background-color: #61a05a ;
+    background: linear-gradient(135deg, #1a3a2f, #3a7d5f);
     color: white;
     padding: 0;
     display: flex;

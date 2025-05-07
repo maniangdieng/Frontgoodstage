@@ -1,7 +1,7 @@
 .footer {
     
     height: 50px;
-    background-color: #4e8f47; 
+    background: linear-gradient(135deg, #3a7d5f, #1a3a2f);
     color: white; 
     text-align: center;
     padding: 0;

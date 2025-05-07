@@ -1,5 +1,5 @@
 .custom-bg {
-    background-color: #1b3f34; /* Couleur de fond personnalisée (gris clair) */
+    background: linear-gradient(135deg ,#3a7d5f, #1a3a2f);
 }
 .nav-link i {
     color: white !important; /* Icônes en blanc */

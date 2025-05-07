@@ -45,7 +45,7 @@ interface Candidature {
   standalone: true,
   templateUrl: './dashboard-per.component.html',
   styleUrls: ['./dashboard-per.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent, RouterLink, FormsModule], // Ajouter FormsModule ici
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, HeaderComponent, FooterComponent, RouterLink, FormsModule],
 })
 export class DashboardPerComponent implements OnInit {
   candidatureForm: FormGroup;
@@ -229,14 +229,14 @@ export class DashboardPerComponent implements OnInit {
       dateDepot: today,
       dateDebut: this.candidatureForm.get('dateDebut')?.value,
       dateFin: this.candidatureForm.get('dateFin')?.value,
-      destination: this.candidatureForm.get('destination')?.value,
+      destination: this.candidatureForm.get('destination')?.value || '',
     };
 
-    const candidatureJson = JSON.stringify(candidatureData);
-    console.log('JSON envoyé :', candidatureJson);
+    console.log('Données du formulaire avant soumission :', this.candidatureForm.value);
+    console.log('JSON envoyé :', JSON.stringify(candidatureData));
 
     const formData = new FormData();
-    formData.append('candidature', new Blob([candidatureJson], { type: 'application/json' }));
+    formData.append('candidature', new Blob([JSON.stringify(candidatureData)], { type: 'application/json' }));
     if (this.isEnseignantNouveau() && this.selectedFiles['arreteTitularisation']) {
       formData.append('arreteTitularisation', this.selectedFiles['arreteTitularisation']);
     }
@@ -247,17 +247,21 @@ export class DashboardPerComponent implements OnInit {
     this.http.post('http://localhost:8080/api/candidatures', formData, { headers: { 'Accept': 'application/json' } }).subscribe(
       (response) => {
         alert('Candidature soumise avec succès !');
-        this.router.navigate(['/suivi-candidatures']);
+        this.candidatureForm.reset();
+        this.selectedFiles = {};
+        this.router.navigate([], { fragment: 'suiviCandidatures' });
         this.loadCandidatures();
       },
       (error) => {
         console.error('Erreur lors de la soumission :', error);
-        this.errorMessage = error.error || 'Une erreur s’est produite lors de la soumission.';
+        // Extraire le message d'erreur spécifique du backend
+        const errorMessage = error.error?.message || error.error || 'Une erreur s’est produite lors de la soumission.';
+        this.errorMessage = errorMessage;
       }
     );
   }
 
-  onCandidatureChange(event: Event) { // Ajouter un paramètre typé Event
+  onCandidatureChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     this.selectedCandidatureId = selectElement.value ? Number(selectElement.value) : null;
     this.selectedFiles = {};
@@ -291,7 +295,7 @@ export class DashboardPerComponent implements OnInit {
       },
       (error) => {
         console.error('Erreur lors de la soumission du rapport :', error);
-        this.errorMessage = error.error || 'Une erreur s’est produite lors de la soumission.';
+        this.errorMessage = error.error?.message || error.error || 'Une erreur s’est produite lors de la soumission.';
       }
     );
   }

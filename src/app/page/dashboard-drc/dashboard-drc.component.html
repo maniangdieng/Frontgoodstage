@@ -39,50 +39,70 @@
         <h3>Gestion des Périodes des Candidatures</h3>
         <p>Interface pour gérer les périodes de dépôt des candidatures.</p>
 
-        <!-- Formulaire pour créer ou modifier une cohorte -->
-        <form [formGroup]="cohorteForm" (ngSubmit)="onSubmit()" class="mb-4">
-          <div class="form-group">
-            <label for="annee">Année</label>
-            <input id="annee" formControlName="annee" class="form-control" />
-            <div *ngIf="cohorteForm.get('annee')?.invalid && cohorteForm.get('annee')?.touched" class="text-danger">
-              L'année est obligatoire.
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="dateOuverture">Date d'ouverture</label>
-            <input id="dateOuverture" type="date" formControlName="dateOuverture" class="form-control" />
-            <div *ngIf="cohorteForm.get('dateOuverture')?.invalid && cohorteForm.get('dateOuverture')?.touched" class="text-danger">
-              La date d'ouverture est obligatoire.
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="dateSemiCloture">Date de semi-clôture</label>
-            <input id="dateSemiCloture" type="date" formControlName="dateSemiCloture" class="form-control" />
-            <div *ngIf="cohorteForm.get('dateSemiCloture')?.invalid && cohorteForm.get('dateSemiCloture')?.touched" class="text-danger">
-              La date de semi-clôture est obligatoire.
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="dateClotureDef">Date de clôture définitive</label>
-            <input id="dateClotureDef" type="date" formControlName="dateClotureDef" class="form-control" />
-            <div *ngIf="cohorteForm.get('dateClotureDef')?.invalid && cohorteForm.get('dateClotureDef')?.touched" class="text-danger">
-              La date de clôture définitive est obligatoire.
-            </div>
-          </div>
-
-          <!-- Correction ici -->
-          <div *ngIf="cohorteForm.errors && cohorteForm.errors['dateOrder']" class="text-danger">
-            {{ cohorteForm.errors['dateOrder'] }}
-          </div>
-
-          <button type="submit" class="btn btn-primary me-2">
-            {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+        <!-- Bouton pour ouvrir la modale -->
+        <div class="mb-3">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cohorteModal">
+            <i class="bi bi-plus-circle me-2"></i> Créer Cohorte
           </button>
-          <button type="button" (click)="resetForm()" class="btn btn-secondary">Annuler</button>
-        </form>
+        </div>
+
+        <!-- Modale pour créer ou modifier une cohorte -->
+        <div class="modal fade" id="cohorteModal" tabindex="-1" aria-labelledby="cohorteModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="cohorteModalLabel">{{ isEditMode ? 'Modifier Cohorte' : 'Créer Cohorte' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form [formGroup]="cohorteForm" (ngSubmit)="onSubmit()">
+                  <div class="form-group">
+                    <label for="annee">Année</label>
+                    <input id="annee" formControlName="annee" class="form-control" />
+                    <div *ngIf="cohorteForm.get('annee')?.invalid && cohorteForm.get('annee')?.touched" class="text-danger">
+                      L'année est obligatoire.
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="dateOuverture">Date d'ouverture</label>
+                    <input id="dateOuverture" type="date" formControlName="dateOuverture" class="form-control" />
+                    <div *ngIf="cohorteForm.get('dateOuverture')?.invalid && cohorteForm.get('dateOuverture')?.touched" class="text-danger">
+                      La date d'ouverture est obligatoire.
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="dateSemiCloture">Date de semi-clôture</label>
+                    <input id="dateSemiCloture" type="date" formControlName="dateSemiCloture" class="form-control" />
+                    <div *ngIf="cohorteForm.get('dateSemiCloture')?.invalid && cohorteForm.get('dateSemiCloture')?.touched" class="text-danger">
+                      La date de semi-clôture est obligatoire.
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="dateClotureDef">Date de clôture définitive</label>
+                    <input id="dateClotureDef" type="date" formControlName="dateClotureDef" class="form-control" />
+                    <div *ngIf="cohorteForm.get('dateClotureDef')?.invalid && cohorteForm.get('dateClotureDef')?.touched" class="text-danger">
+                      La date de clôture définitive est obligatoire.
+                    </div>
+                  </div>
+
+                  <div *ngIf="cohorteForm.errors && cohorteForm.errors['dateOrder']" class="text-danger">
+                    {{ cohorteForm.errors['dateOrder'] }}
+                  </div>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="resetForm()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                      {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Tableau des cohortes -->
         <h4>Liste des Cohortes</h4>
@@ -104,9 +124,13 @@
               <td>{{ cohorte.dateOuverture | date }}</td>
               <td>{{ cohorte.dateSemiCloture | date }}</td>
               <td>{{ cohorte.dateClotureDef | date }}</td>
-              <td>
-                <button (click)="editCohorte(cohorte)" class="btn btn-warning btn-sm me-2">Modifier</button>
-                <button (click)="deleteCohorte(cohorte.id!)" class="btn btn-danger btn-sm">Supprimer</button>
+              <td class="action-buttons">
+                <button class="btn btn-icon btn-warning me-1" (click)="editCohorte(cohorte)" data-bs-toggle="modal" data-bs-target="#cohorteModal" title="Modifier">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-icon btn-danger" (click)="deleteCohorte(cohorte.id!)" title="Supprimer">
+                  <i class="bi bi-trash"></i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -147,49 +171,41 @@
           </tbody>
         </table>
       </div>
-      <div class="col py-3" id="content-area">
-        <!-- Section pour voir les arrêtés -->
-        <div id="voirArretes" class="content-section">
-          <h3>Voir les Arrêtés</h3>
-          <p>Interface pour consulter les arrêtés déjà établis.</p>
-      
-          <!-- Tableau des arrêtés -->
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Date Dépôt</th>
-                <th>Statut</th>
-                <th>Date Début</th>
-                <th>Date Fin</th>
-                <th>Destination</th>
-                <th>Cohorte</th>
-                <th>PER</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let candidature of candidatures">
-                <td>{{ candidature.dateDepot | date }}</td>
-                <td>{{ candidature.statut }}</td>
-                <td>{{ candidature.dateDebut | date }}</td>
-                <td>{{ candidature.dateFin | date }}</td>
-                <td>{{ candidature.destination }}</td>
-                <td>{{ candidature.cohorteAnnee }}</td>
-                <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
-                <td>
-                  <button  class="btn btn-success btn-sm" (click)="voirArrete(candidature)">
-                    Voir
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      
+
+      <div id="voirArretes" class="content-section">
+        <h3>Voir les Arrêtés</h3>
+        <p>Interface pour consulter les arrêtés déjà établis.</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date Dépôt</th>
+              <th>Statut</th>
+              <th>Date Début</th>
+              <th>Date Fin</th>
+              <th>Destination</th>
+              <th>Cohorte</th>
+              <th>PER</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let candidature of candidatures">
+              <td>{{ candidature.dateDepot | date }}</td>
+              <td>{{ candidature.statut }}</td>
+              <td>{{ candidature.dateDebut | date }}</td>
+              <td>{{ candidature.dateFin | date }}</td>
+              <td>{{ candidature.destination }}</td>
+              <td>{{ candidature.cohorteAnnee }}</td>
+              <td>{{ candidature.personnelNom }} {{ candidature.personnelPrenom }}</td>
+              <td>
+                <button class="btn btn-success btn-sm" (click)="voirArrete(candidature)">
+                  Voir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-
-
-  
 </div>
