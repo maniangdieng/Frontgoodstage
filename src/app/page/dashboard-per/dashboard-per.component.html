@@ -17,16 +17,12 @@
               <span class="text-nowrap">Déposer Candidature</span>
             </a>
           </li>
-          
-         
-          
           <li>
             <a [routerLink]="[]" fragment="suiviCandidatures" class="nav-link px-0 align-middle d-flex align-items-center text-white">
               <i class="fs-4 bi bi-file-earmark-check me-2"></i>
               <span class="text-nowrap">Suivi de mes candidatures</span>
             </a>
           </li>
-         
           <li>
             <a [routerLink]="[]" fragment="rapportVoyage" class="nav-link px-0 align-middle d-flex align-items-center text-white">
               <i class="fs-4 bi bi-journal-text me-2"></i>
@@ -88,8 +84,33 @@
         <!-- Champs spécifiques pour Ancien Enseignant -->
         <div *ngIf="candidatureForm.get('typeCandidature')?.value === 'ancien'">
           <div class="mb-3">
-            <label for="justificatifPrecedentVoyage" class="form-label">Justificatif du précédent voyage</label>
-            <input type="file" id="justificatifPrecedentVoyage" class="form-control" (change)="onFileChange($event, 'justificatifPrecedentVoyage')">
+            <label for="carteEmbarquement" class="form-label">Carte d’embarquement du précédent voyage</label>
+            <div *ngIf="lastVoyageDocuments['carteEmbarquement']" class="alert alert-info">
+              Document précédent : {{ lastVoyageDocuments['carteEmbarquement'].nomFichier }}
+              <button type="button" class="btn btn-link btn-sm" (click)="downloadLastVoyageDocument('carteEmbarquement')">Télécharger</button>
+            </div>
+            <input type="file" id="carteEmbarquement" class="form-control" (change)="onFileChange($event, 'carteEmbarquement')">
+            <small class="form-text text-muted">Vous pouvez remplacer le document précédent en sélectionnant un nouveau fichier.</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="rapportVoyage" class="form-label">Rapport du précédent voyage</label>
+            <div *ngIf="lastVoyageDocuments['rapportVoyage']" class="alert alert-info">
+              Document précédent : {{ lastVoyageDocuments['rapportVoyage'].nomFichier }}
+              <button type="button" class="btn btn-link btn-sm" (click)="downloadLastVoyageDocument('rapportVoyage')">Télécharger</button>
+            </div>
+            <input type="file" id="rapportVoyage" class="form-control" (change)="onFileChange($event, 'rapportVoyage')">
+            <small class="form-text text-muted">Vous pouvez remplacer le document précédent en sélectionnant un nouveau fichier.</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="justificatifDestination" class="form-label">Justificatif de destination du précédent voyage (optionnel)</label>
+            <div *ngIf="lastVoyageDocuments['justificatifDestination']" class="alert alert-info">
+              Document précédent : {{ lastVoyageDocuments['justificatifDestination'].nomFichier }}
+              <button type="button" class="btn btn-link btn-sm" (click)="downloadLastVoyageDocument('justificatifDestination')">Télécharger</button>
+            </div>
+            <input type="file" id="justificatifDestination" class="form-control" (change)="onFileChange($event, 'justificatifDestination')">
+            <small class="form-text text-muted">Vous pouvez remplacer le document précédent en sélectionnant un nouveau fichier.</small>
           </div>
         </div>
 
@@ -170,4 +191,3 @@
     </div>
   </div>
 </div>
-

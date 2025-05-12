@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms'; // Importer FormsModule pour ngModel
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
@@ -32,12 +32,19 @@ interface Candidature {
   dateDebut: string;
   dateFin: string;
   destination: string;
-  statut: string; // EN_ATTENTE, VALIDÉ, REFUSÉ
+  statut: string;
   commentaire: string;
   cohorteId: number;
   voyageEtude?: {
-    statut: string; // EN_ATTENTE, EN_COURS, TERMINÉ
+    statut: string;
   };
+}
+
+interface DocumentsDto {
+  id: number;
+  nomFichier: string;
+  cheminFichier: string;
+  typeDocument: string;
 }
 
 @Component({
@@ -50,6 +57,7 @@ interface Candidature {
 export class DashboardPerComponent implements OnInit {
   candidatureForm: FormGroup;
   selectedFiles: { [key: string]: File } = {};
+  lastVoyageDocuments: { [key: string]: DocumentsDto | null } = {}; // Permettre null
   cohortes: Cohorte[] = [];
   utilisateurs: Utilisateur[] = [];
   errorMessage: string | null = null;
@@ -89,6 +97,7 @@ export class DashboardPerComponent implements OnInit {
     this.loadCohortes();
     this.loadUtilisateurs();
     this.loadCandidatures();
+    this.loadLastVoyageDocuments();
 
     const currentYear = new Date().getFullYear();
     this.loadCurrentCohorte(currentYear);
@@ -105,11 +114,34 @@ export class DashboardPerComponent implements OnInit {
           console.log('Détails des candidatures reçus :', data);
           this.candidatures = data;
           this.candidaturesVoyagesEnCours = data.filter(c => c.voyageEtude && c.voyageEtude.statut === 'EN_COURS');
+          this.candidatureForm.get('typeCandidature')?.setValue(this.isEnseignantNouveau() ? 'nouveau' : 'ancien');
         },
         (error) => console.error('Erreur lors de la récupération des candidatures', error)
       );
     } else {
       console.error('Utilisateur non connecté ou ID non disponible');
+    }
+  }
+
+  loadLastVoyageDocuments() {
+    if (this.user && this.user.id && this.isEnseignantAncien()) {
+      const documentTypes = ['rapportVoyage', 'carteEmbarquement', 'justificatifDestination'];
+      documentTypes.forEach(type => {
+        this.candidatureService.getLastVoyageDocument(this.user.id, type).subscribe(
+          (document: DocumentsDto | null) => {
+            this.lastVoyageDocuments[type] = document;
+            if (document) {
+              console.log(`Document ${type} chargé :`, document);
+            } else {
+              console.warn(`Aucun document de type ${type} trouvé`);
+            }
+          },
+          (error) => {
+            console.warn(`Erreur lors du chargement du document ${type} :`, error);
+            this.lastVoyageDocuments[type] = null;
+          }
+        );
+      });
     }
   }
 
@@ -183,6 +215,8 @@ export class DashboardPerComponent implements OnInit {
   onFileChange(event: any, fieldName: string) {
     if (event.target.files.length > 0) {
       this.selectedFiles[fieldName] = event.target.files[0];
+    } else {
+      delete this.selectedFiles[fieldName];
     }
   }
 
@@ -218,9 +252,15 @@ export class DashboardPerComponent implements OnInit {
       this.errorMessage = 'Un arrêté de titularisation est requis pour les nouveaux enseignants.';
       return;
     }
-    if (this.isEnseignantAncien() && !this.selectedFiles['justificatifPrecedentVoyage']) {
-      this.errorMessage = 'Un justificatif du précédent voyage est requis pour les anciens enseignants.';
-      return;
+
+    if (this.isEnseignantAncien()) {
+      const requiredDocs = ['carteEmbarquement', 'rapportVoyage'];
+      for (const docType of requiredDocs) {
+        if (!this.selectedFiles[docType] && !this.lastVoyageDocuments[docType]) {
+          this.errorMessage = `Un ${docType} du précédent voyage est requis pour les anciens enseignants.`;
+          return;
+        }
+      }
     }
 
     const candidatureData = {
@@ -240,8 +280,12 @@ export class DashboardPerComponent implements OnInit {
     if (this.isEnseignantNouveau() && this.selectedFiles['arreteTitularisation']) {
       formData.append('arreteTitularisation', this.selectedFiles['arreteTitularisation']);
     }
-    if (this.isEnseignantAncien() && this.selectedFiles['justificatifPrecedentVoyage']) {
-      formData.append('justificatifPrecedentVoyage', this.selectedFiles['justificatifPrecedentVoyage']);
+    if (this.isEnseignantAncien()) {
+      ['carteEmbarquement', 'rapportVoyage', 'justificatifDestination'].forEach(docType => {
+        if (this.selectedFiles[docType]) {
+          formData.append(docType, this.selectedFiles[docType]);
+        }
+      });
     }
 
     this.http.post('http://localhost:8080/api/candidatures', formData, { headers: { 'Accept': 'application/json' } }).subscribe(
@@ -249,12 +293,13 @@ export class DashboardPerComponent implements OnInit {
         alert('Candidature soumise avec succès !');
         this.candidatureForm.reset();
         this.selectedFiles = {};
+        this.lastVoyageDocuments = {};
+        this.loadLastVoyageDocuments();
         this.router.navigate([], { fragment: 'suiviCandidatures' });
         this.loadCandidatures();
       },
       (error) => {
         console.error('Erreur lors de la soumission :', error);
-        // Extraire le message d'erreur spécifique du backend
         const errorMessage = error.error?.message || error.error || 'Une erreur s’est produite lors de la soumission.';
         this.errorMessage = errorMessage;
       }
@@ -286,18 +331,20 @@ export class DashboardPerComponent implements OnInit {
     }
     formData.append('rapportVoyage', this.selectedFiles['rapportVoyage']);
 
-    this.http.post('http://localhost:8080/api/candidatures/rapport-voyage', formData).subscribe(
-      (response) => {
-        alert('Justificatifs et rapport soumis avec succès !');
+    this.http.post<{ message: string }>('http://localhost:8080/api/candidatures/rapport-voyage', formData, {
+      headers: { 'Accept': 'application/json' }
+    }).subscribe({
+      next: (response) => {
+        alert(response.message);
         this.selectedCandidatureId = null;
         this.selectedFiles = {};
         this.loadCandidatures();
       },
-      (error) => {
+      error: (error) => {
         console.error('Erreur lors de la soumission du rapport :', error);
         this.errorMessage = error.error?.message || error.error || 'Une erreur s’est produite lors de la soumission.';
       }
-    );
+    });
   }
 
   logout() {
@@ -310,5 +357,24 @@ export class DashboardPerComponent implements OnInit {
 
   isEnseignantAncien(): boolean {
     return !this.isEnseignantNouveau();
+  }
+
+  downloadLastVoyageDocument(docType: string) {
+    const doc = this.lastVoyageDocuments[docType]; // Utiliser une variable différente pour éviter la confusion avec window.document
+    if (doc) {
+      this.http.get(doc.cheminFichier, { responseType: 'blob' }).subscribe(
+        (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a'); // Utilisation explicite de window.document
+          a.href = url;
+          a.download = doc.nomFichier;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        },
+        (error) => console.error(`Erreur lors du téléchargement du document ${docType} :`, error)
+      );
+    } else {
+      console.warn(`Aucun document de type ${docType} disponible pour le téléchargement`);
+    }
   }
 }

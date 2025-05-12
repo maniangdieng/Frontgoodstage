@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs'; // Ajout de 'of' pour retourner un Observable vide en cas d'erreur
-import { catchError } from 'rxjs/operators'; // Ajout de 'catchError' pour gérer les erreurs
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+// Interface pour les documents
+interface DocumentsDto {
+  id: number;
+  nomFichier: string;
+  cheminFichier: string;
+  typeDocument: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class CandidatureService {
-  private apiUrl = 'http://localhost:8080/api/candidatures'; // Remplacez par l'URL de votre API
+  private apiUrl = 'http://localhost:8080/api/candidatures';
 
   constructor(private http: HttpClient) {}
 
@@ -24,23 +32,15 @@ export class CandidatureService {
   // Créer une nouvelle candidature avec des fichiers
   createCandidature(candidature: any, files: File[]): Observable<any> {
     const formData = new FormData();
-
-    // Ajouter les données de la candidature
-    formData.append('candidature', new Blob([JSON.stringify(candidature)], {
-      type: 'application/json',
-    }));
-
-    // Ajouter les fichiers
+    formData.append('candidature', new Blob([JSON.stringify(candidature)], { type: 'application/json' }));
     files.forEach((file, index) => {
       formData.append('files', file, file.name);
     });
-
     return this.http.post<any>(this.apiUrl, formData);
   }
 
- 
-   // Mettre à jour une candidature avec des fichiers
-   updateCandidature(id: number, formData: FormData): Observable<any> {
+  // Mettre à jour une candidature avec des fichiers
+  updateCandidature(id: number, formData: FormData): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, formData);
   }
 
@@ -49,7 +49,7 @@ export class CandidatureService {
     return this.http.post(`${this.apiUrl}/${candidatureId}/validate`, {}).pipe(
       catchError((error) => {
         console.error('Erreur lors de la validation de la candidature', error);
-        return of(null); // Retourne null en cas d'erreur
+        return of(null);
       })
     );
   }
@@ -63,7 +63,6 @@ export class CandidatureService {
   deleteDocument(documentId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/documents/${documentId}`);
   }
-
 
   // Télécharger un document
   downloadDocument(documentId: number): Observable<Blob> {
@@ -84,15 +83,15 @@ export class CandidatureService {
     return this.http.get<any[]>(`${this.apiUrl}/statut/${statut}`);
   }
 
+  // Récupérer les candidatures d'un utilisateur
   getMesCandidatures(userId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/mes-candidatures/${userId}`, { withCredentials: true }).pipe(
       catchError((error) => {
         console.error('Erreur lors de la récupération des candidatures', error);
-        return of([]); // Retourne un tableau vide en cas d'erreur
+        return of([]);
       })
     );
   }
-
 
   // Établir un arrêté pour un candidat
   etablirArrete(candidatureId: number): Observable<any> {
@@ -109,20 +108,30 @@ export class CandidatureService {
     return this.http.get(`${this.apiUrl}/${candidatureId}/download-arrete`, { responseType: 'blob' });
   }
 
- // Nouvelle méthode pour établir un arrêté collectif
- etablirArreteCollectif(candidatureIds: number[]): Observable<Blob> {
-  return this.http.post(`${this.apiUrl}/etablir-arrete-collectif`, candidatureIds, {
-    responseType: 'blob'
-  });
-}
+  // Établir un arrêté collectif
+  etablirArreteCollectif(candidatureIds: number[]): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/etablir-arrete-collectif`, candidatureIds, {
+      responseType: 'blob',
+    });
+  }
 
-// Nouvelle méthode pour récupérer les candidatures éligibles
-getCandidaturesPourArreteCollectif(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/candidatures-pour-arrete-collectif`);
-}
+  // Récupérer les candidatures éligibles pour arrêté collectif
+  getCandidaturesPourArreteCollectif(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures-pour-arrete-collectif`);
+  }
 
-getCandidaturesValidesSansArrete(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/candidatures-valides-sans-arrete`);
-}
+  // Récupérer les candidatures validées sans arrêté
+  getCandidaturesValidesSansArrete(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/candidatures-valides-sans-arrete`);
+  }
 
+  // Récupérer le dernier document d'un voyage terminé pour un utilisateur
+  getLastVoyageDocument(personnelId: number, typeDocument: string): Observable<DocumentsDto | null> {
+    return this.http.get<DocumentsDto | null>(`${this.apiUrl}/last-voyage-document/${personnelId}/${typeDocument}`).pipe(
+      catchError((error) => {
+        console.warn(`Aucun document de type ${typeDocument} trouvé pour personnelId=${personnelId}`, error);
+        return of(null);
+      })
+    );
+  }
 }
